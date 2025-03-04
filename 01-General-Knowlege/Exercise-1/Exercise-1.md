@@ -3,25 +3,25 @@
 ## 📚 Static Library Build Guide
 
 ### **1️⃣ Project Structure**
-├── bin
+```
+├── 📂bin
 │   └── exam
-├── inc
+├── 📂inc
 │   ├── calc_advance.h
 │   └── calc_basic.h
-├── lib
-│   └── static_lib
+├── 📂lib
+│   └──📂static_lib
 │       └── libcalc.a
 ├── Makefile
-├── obj
+├── 📂obj
 │   ├── calc_advance.o
 │   ├── calc_basic.o
 │   └── main.o
-└── src
+└── 📂src
     ├── calc_advance.c
     ├── calc_basic.c
     └── main.c
-
----
+```
 
 ### **2️⃣ Build Instructions**
 #### **🔹 2.1 Compile & Create Static Library**
@@ -35,7 +35,7 @@
     make clean
 - This deletes `obj/`, `bin/`, and `lib/static_lib/`.
 
-
+---
 ### 3️⃣ Running the Executable
     ./bin/exam
 
