@@ -17,7 +17,7 @@ int main() {
     // O_CREAT: Create file if it does not exist
     // O_TRUNC: Truncate file to zero length if it already exists
     // 0644: File permissions (owner: read/write, group/others: read-only)
-    int fd = open(file_name, O_WRONLY | O_CREAT | O_TRUNC, 0655);
+    int fd = open(file_name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (-1 == fd) {
         fprintf(stderr, "Error creating file");
         return -1;
