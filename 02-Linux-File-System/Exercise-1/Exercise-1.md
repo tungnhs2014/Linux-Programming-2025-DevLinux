@@ -1,4 +1,4 @@
-## Exercise 1: 
+## Exercise 1
 
 - Write a program that opens any file using the O_APPEND flag. Then, perform a seek operation to move to the beginning of the file and write some data to it. Where will the data appear in the file, and why does this happen?
 
@@ -8,7 +8,6 @@
 ## Explanation
 - The file is opened with the `O_APPEND` flag, which forces all write operations to append data at the end of the file.
 - Even if the program explicitly calls `lseek(fd, 0, SEEK_SET)` to move the file pointer to the beginning, this does not affect the writing position.
-- When `write(fd, buf, strlen(buf))` is executed, the system ensures that data is always appended to the end of the file.
 
 ## Project Structure
 The project follows this directory structure:
