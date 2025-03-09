@@ -115,6 +115,7 @@ gcc source.o -o output_executable
 A **library** is a collection of precompiled code that can be reused in different programs. Instead of writing the same code multiple times, developers can use libraries to improve efficiency and maintainability. Libraries are mainly divided into two types:
 - **Static Library** (`.a` on Linux, `.lib` on Windows)
 - **Shared Library** (`.so` on Linux, `.dll` on Windows)
+  
 ![Image](https://github.com/user-attachments/assets/75be86f5-3bfc-4b6f-84ff-ce256c4d415f)
 
 ### 3.2. Static Library
