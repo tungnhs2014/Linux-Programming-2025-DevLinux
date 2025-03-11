@@ -15,8 +15,7 @@ This program creates a file, writes some data into it, and retrieves information
 ## Project Structure
 ```
 ├── bin
-│   └── exam               
-├── Exercise-4.md          
+│   └── exam                      
 ├── file
 │   └── test.txt            
 ├── Makefile                

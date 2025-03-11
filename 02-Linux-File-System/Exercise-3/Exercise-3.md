@@ -21,7 +21,6 @@ $ ./example_program filename num-bytes [r/w] "Hello"
 ```
 ├── bin/         
 │   └── example_program
-├── Exercise-3.md
 ├── file/        
 │   └── linux.txt
 ├── Makefile     
