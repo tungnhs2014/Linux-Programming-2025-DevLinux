@@ -1,4 +1,4 @@
-# Build exercise 1
+# Build exercise 2
 
 # Compiler and tools
 CC = gcc
