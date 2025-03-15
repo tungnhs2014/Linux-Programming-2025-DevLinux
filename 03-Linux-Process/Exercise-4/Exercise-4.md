@@ -1,4 +1,4 @@
-# Exercise 4
+# Exercise 4: Process Status Recording
 
 ## Description
 This project implements a program that creates a **child process**, and the parent process uses **wait()** to wait for the child process to terminate and record its exit status.

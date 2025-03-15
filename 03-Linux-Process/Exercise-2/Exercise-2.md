@@ -1,4 +1,4 @@
-# Exercise 2
+# Exercise 2: Using Excel and Environment Variables
 
 ## Description
 This project implements a C program where the child process replaces the running program with another program (e.g., `ls` or `date`) using the `execlp()` or `execvp()` function.

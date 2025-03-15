@@ -1,4 +1,4 @@
-# Exercise 3
+# Exercise 3: Process Signal
 
 ## Description
 This project implements a program that creates a **parent-child process** pair. The parent process sends the **SIGUSR1** signal to the child process after a specific delay.
