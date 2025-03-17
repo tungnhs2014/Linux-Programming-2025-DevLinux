@@ -2,11 +2,11 @@
 ## 🏁 2.1. Introduction to the Linux File System
 ### 2.1.1. Introduction
 Linux follows the philosophy: **"Everything in Linux is a file."** This includes:
-✅ Regular files (text files, binary files, executables)
-✅ Directories (folders containing other files)
-✅ Hardware devices (represented as files)
-✅ Storage devices (mounted as file systems)
-✅ Sockets and Pipes (inter-process communication)
+- Regular files (text files, binary files, executables)
+- Directories (folders containing other files)
+- Hardware devices (represented as files)
+- Storage devices (mounted as file systems)
+- Sockets and Pipes (inter-process communication)
 
 To display detailed information about files and directories:
 ```sh
