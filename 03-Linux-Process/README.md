@@ -1,6 +1,6 @@
 # Linux Process
 
-## 🚀 3.1. Introduction
+##  3.1. Introduction
 ### 3.1.1. Program
 - A program is a set of instructions designed to perform a specific task
 - Programs exist as executable files stored on the computer's hard drive
@@ -20,7 +20,7 @@
 - When a process completes its task, it terminates and releases system resources
 
 ---
-## 📝 3.2. Command-line Arguments
+##  3.2. Command-line Arguments
 ### 3.2.1. Overview
 Every program starts from the `main()` function. When running a program, the environment parameters (command line arguments) will be passed as two arguments in the main() function:
 
@@ -56,7 +56,7 @@ When running: `./program hello world`
 - argv[2] will be "world"
 
 ---
-## 🧠 3.3. Memory Layout
+##  3.3. Memory Layout
 ### 3.3.1. Memory Segments (From Low to High Addresses)
 #### Text/Code Segment
 - **Purpose**: Contains executable machine code instructions of the program
@@ -210,7 +210,428 @@ When running: `./program hello world`
 
 ---
 
-## 🔧 3.4. Operations on Process
-## 🗃️ 3.5. Process Management
-## 👻 3.6. Orphan and Zombie Processes
-## 📝 3.7. Assignments
+##  3.4. Operations on Process
+### 3.4.1. System call Fork()
+The `fork()` system call is a fundamental mechanism for process creation in Linux and Unix-based operating systems. When a process calls `fork()`, the operating system creates a new process that is almost identical to the calling process.
+
+![Image](https://github.com/user-attachments/assets/b4810c85-6346-46d4-9a7d-de96e5e66cba)
+
+#### Basic Concepts
+- **Parent Process**: The process that calls the `fork()` system call
+- **Child Process**: The new process created by the parent process
+- **Init Process**: The first process in the system (PID 1), which is the parent of all other processes
+
+#### How It Works
+- When a process calls `fork()`, the following occurs:
+  + The kernel creates a new process (the child)
+  + The child receives a copy of the parent's data, heap, and stack segments
+  + Both processes continue execution from the instruction following the `fork()` call
+
+#### Return Values
+- The `fork()` system call returns different values depending on whether it's the parent or child process:
+  + In the parent process: Returns the child's Process ID (PID)
+  + In the child process: Returns 0
+  + On failure: Returns -1
+
+#### Memory Behavior
+- After a fork operation: 
+  + Each process has its own text segment
+  + The child receives a copy of the parent's data, heap, and stack
+  + Changes to variables in one process do not affect the other process
+
+#### Example
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+
+int main() {
+    int a = 0;
+    pid_t pid;
+    
+    printf("Initial value: a = %d\n", a);
+    
+    pid = fork();
+    
+    if (pid < 0) {
+        // Error handling
+        fprintf(stderr, "Fork failed\n");
+        return 1;
+    } else if (pid == 0) {
+        // Child process
+        a++;
+        printf("Child process: a = %d\n", a);
+    } else {
+        // Parent process
+        printf("Parent process: a = %d, Child PID = %d\n", a, pid);
+    }
+    
+    return 0;
+}
+```
+
+#### Common Uses
+- Creating parallel processes for concurrent tasks
+- Implementing command shells
+- Creating daemon processes
+- Executing different programs (when combined with exec functions)
+
+### 3.4.2 Exec Family - Process Replacement Functions
+The Exec Family is a group of system calls in Linux used in conjunction with fork(). While fork() creates a child process that is identical to the parent, the Exec Family allows replacing the current process with a new program.
+
+#### How It Works
+- Exec functions replace the code, data, heap, and stack of the calling process with a new program
+- The process retains its PID after the exec call
+- Typically used after fork() to run a different program in the child process
+
+#### Functions in the Exec Family
+1. **execle(const char \*pathname, const char \*arg, ..., char \*const envp[])**
+   - Executes a program with a full pathname
+   - Passes arguments as a list
+   - Allows setting environment variables
+
+2. **execlp(const char \*filename, const char \*arg, ...)**
+   - Searches for filename in PATH directories
+   - Passes arguments as a list
+
+3. **execvp(const char \*filename, char \*const argv[])**
+   - Searches for filename in PATH directories
+   - Passes arguments as a vector array
+
+4. **execv(const char \*pathname, char \*const argv[])**
+   - Executes a program with a full pathname
+   - Passes arguments as a vector array
+
+5. **execl(const char \*pathname, const char \*arg, ...)**
+   - Executes a program with a full pathname
+   - Passes arguments as a list
+
+#### Key Characteristics
+- None of the exec functions return on success
+- Return -1 on error
+- Work with fork() to create the "fork and exec" model
+- The process after exec inherits PID, PPID, and many attributes from the original process
+
+#### The "Fork and Exec" Model
+- This model is the foundation of many Linux applications such as shells, daemons, and process management utilities:
+  + Parent process calls fork() to create a child process
+  + Child process calls one of the exec functions to run a new program
+  + Parent process can continue execution or wait for the child process to terminate
+
+#### Example Code
+This example demonstrates the "fork and exec" pattern by creating a child process that executes the `ls -l` command while the parent waits for it to complete.
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t pid;
+    
+    pid = fork();
+    
+    if (pid < 0) {
+        // Error
+        fprintf(stderr, "Fork failed\n");
+        return 1;
+    } else if (pid == 0) {
+        // Child process
+        printf("Child process executing ls command...\n");
+        
+        // Replace child process with the ls command
+        execl("/bin/ls", "ls", "-l", NULL);
+        
+        // If execl returns, it must have failed
+        fprintf(stderr, "execl failed\n");
+        exit(1);
+    } else {
+        // Parent process
+        printf("Parent waiting for child (PID: %d) to complete...\n", pid);
+        wait(NULL);
+        printf("Child process completed\n");
+    }
+    
+    return 0;
+}
+```
+--- 
+
+## 3.5. Process Management
+Process Management is performed through a number of basic system calls. These system calls can be combined to solve more complex problems. Process management is mainly handled through **system calls**, including:
+- `fork()`: Creates a new process.
+- `exit()`: Terminates a process and returns an exit status.
+- `wait()`: Waits for a process to terminate and collects its exit status.
+- `waitpid()`: Waits for a specific child process to terminate.
+
+![Image](https://github.com/user-attachments/assets/368ca4a6-2058-4e9a-b0c9-c1cbb0588ac4)
+
+### System Calls
+#### fork()
+- Creates a new process (child) from the calling process (parent).
+- Returns:
+  - `0` to the child process.
+  - Child's **PID** to the parent process.
+  - `-1` if process creation failed.
+
+#### exit()
+- Terminates the calling process.
+- Returns an **exit status** to the parent process.
+- Ensures that the resources are properly released.
+
+#### wait()
+- Used to monitor the termination status of one of the child processes created by the parent process.
+- Blocks the parent process until a child process terminates.  
+  - If a child process has already terminated, it returns immediately.
+- If the `status` is other than **-1**, it points to an integer value containing information about the child's termination state.
+- Returns the **PID of the terminated child process** or **-1** if an error occurs.
+```c
+#include <sys/wait.h>
+
+
+pid_t wait(int *status);
+```
+
+#### waitpid()
+- Addresses the limitation of `wait()` when there are multiple child processes.  
+- Allows the parent process to wait for a **specific child process** to terminate.  
+- Can be set to **non-blocking mode** using the `WNOHANG` option.  
+- Returns the **PID of the terminated child process** or **-1** if an error occurs.
+
+#### Syntax
+```c
+#include <sys/wait.h>
+
+pid_t waitpid(pid_t pid, int *status, int options);
+```
+- `pid`:
+  - `> 0`: PID of the specific child process to wait for.
+  - `= 0`: Wait for any child process in the same process group.
+  - `< -1`: Wait for any child process whose process group ID is the absolute value of `pid`.
+  - `= -1`: Wait for any child process (similar to `wait()`).
+- `status`: Points to an integer where the termination status will be stored.
+- `options`: Additional options to modify behavior (e.g., `WNOHANG` for non-blocking wait).
+
+---
+
+### Example Code Wait()
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+    if (pid == 0) {
+        // Child process
+        printf("Child process (PID: %d) is running\n", getpid());
+        exit(0);
+    } else {
+        // Parent process
+        int status;
+        wait(&status);
+        if (WIFEXITED(status)) {
+            printf("Parent process (PID: %d) received exit status: %d\n", getpid(), WEXITSTATUS(status));
+        }
+    }
+
+    return 0;
+}
+```
+
+### Example Code Waitpid()
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+
+    if (pid == 0) {
+        // Child process
+        printf("Child process (PID: %d) is running\n", getpid());
+        sleep(2);  // Simulate some work
+        exit(42);  // Exit with a specific code
+    } else {
+        // Parent process
+        int status;
+        pid_t child_pid = waitpid(pid, &status, 0);
+        if (child_pid > 0) {
+            if (WIFEXITED(status)) {
+                printf("Parent process (PID: %d) received exit status from child (PID: %d): %d\n",
+                       getpid(), child_pid, WEXITSTATUS(status));
+            }
+        } else {
+            perror("waitpid failed");
+        }
+    }
+
+    return 0;
+}
+```
+--- 
+
+## 3.6. Orphan and Zombie Processes
+### 3.6.1. Orphan Process
+- An **orphan process** occurs when the **parent process terminates before the child process**.
+- The **orphaned child process** is adopted by the **`init` process (PID 1)**.
+- The `init` process will perform a `wait()`to clean up the process and release resources.
+
+#### Example
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    pid_t pid = fork();
+
+    if (pid > 0) {
+        // Parent process
+        printf("Parent process (PID: %d) exiting...\n", getpid());
+        exit(0);
+    } else if (pid == 0) {
+        // Child process
+        sleep(5);  // Simulate a long-running child process
+        printf("Orphan child process (PID: %d), adopted by init (PID: 1)\n", getpid());
+        exit(0);
+    } else {
+        perror("Fork failed");
+        exit(1);
+    }
+
+    return 0;
+}
+```
+**Explanation**:
+- The parent process terminates immediately after forking.
+- The child process continues to run and becomes an orphan.
+- The init process adopts the orphaned child and reaps it when it finishes.
+
+### 3.6.2. Zombie Process
+- A **zombie process** occurs when the child process terminates before the parent process but the parent does not call `wait()` or `waitpid()`.
+- The **child process becomes a zombie** and remains in the process **table as "Z" (Zombie)**.
+- This occurs because the exit status of the child is not collected by the parent.
+
+#### Example
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    pid_t pid = fork();
+
+    if (pid > 0) {
+        // Parent process: Sleep to simulate delay
+        sleep(10);
+        printf("Parent process (PID: %d) running, child became zombie.\n", getpid());
+    } else if (pid == 0) {
+        // Child process: Exit immediately
+        printf("Child process (PID: %d) exiting...\n", getpid());
+        exit(0);
+    } else {
+        perror("Fork failed");
+        exit(1);
+    }
+
+    return 0;
+}
+```
+
+#### How to Identify
+Use the following command to detect zombie processes:
+```bash
+ps aux | grep Z
+```
+
+### 3.6.3. Prevent Zombie 
+- Too many zombie processes can **fill the Process ID (PID) table**, preventing the creation of new processes.
+- Two primary methods to prevent zombie processes:
+  + Using `wait()` or `waitpid()` to collect the child's termination status.
+  + Using signal handling **(SIGCHLD)** to automatically reap child processes.
+
+#### Example 1: Using waitpid()
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t pid = fork();
+
+    if (pid > 0) {
+        // Parent process: Wait for the child process to terminate
+        waitpid(pid, NULL, 0);
+        printf("Child process reaped by parent.\n");
+    } else if (pid == 0) {
+        // Child process
+        printf("Child process (PID: %d) exiting...\n", getpid());
+        exit(0);
+    } else {
+        perror("Fork failed");
+        exit(1);
+    }
+
+    return 0;
+}
+```
+
+#### Example 2: Using SIGCHLD Handler
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
+
+void sigchld_handler(int signum) {
+    wait(NULL);  // Reap the child process
+    printf("Child process reaped automatically.\n");
+}
+
+int main() {
+    signal(SIGCHLD, sigchld_handler);  // Set up signal handler
+
+    pid_t pid = fork();
+
+    if (pid > 0) {
+        // Parent process
+        printf("Parent process (PID: %d) running...\n", getpid());
+        sleep(10);  // Simulate long-running parent
+    } else if (pid == 0) {
+        // Child process
+        printf("Child process (PID: %d) exiting...\n", getpid());
+        exit(0);
+    } else {
+        perror("Fork failed");
+        exit(1);
+    }
+
+    return 0;
+}
+```
+
+### Summary
+- **Orphan Process:** Child continues running after the parent exits and is adopted by init.
+- **Zombie Process:** Child terminates but the parent does not wait(), leaving it in the process table.
+- **Preventing Zombie Process:**
+  + Use wait() or waitpid() in the parent process.
+  + Set up a SIGCHLD signal handler to automatically reap terminated children.
+- By managing orphan and zombie processes effectively, you ensure the stability and efficiency of Linux systems
