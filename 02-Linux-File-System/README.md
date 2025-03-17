@@ -352,18 +352,27 @@ Each process has its own **File Descriptor Table**, which maintains references t
 
 #### File Opening Process
 The process of opening a file in Linux involves multiple steps:
-1. **System Call (open()):** The application requests to open a file using a system call.
-2. **File Descriptor Allocation:** The kernel allocates a new file descriptor (FD) in the **File Descriptor Table**.
-3. **Open File Table Entry:** An entry is created in the **Open File Table** to maintain the file offset and flags.
-4. **I-node Lookup:** The kernel locates the file’s I-node and creates a reference in the **Open File Table**.
+1. **System Call Invocation**:
+   - Process calls `open("filename", flags)`
+   - Kernel receives the request and begins processing
+2. **I-node Lookup**:
+   - Kernel parses the file path
+   - Searches for the corresponding i-node in the filesystem
+3. **Open File Table Entry Creation**:
+   - Kernel creates a new entry in the Open File Table
+   - Sets the file offset to 0 (or to the end if O_APPEND flag is used)
+   - Stores the status flags (O_RDWR, etc.)
+   - Creates a reference to the found i-node
+4. **File Descriptor Allocation**:
+   - Kernel finds the first available slot in the process's File Descriptor Table
+   - Assigns an fd number to this slot (e.g., fd=3)
+   - Links this fd to the newly created Open File Table entry
+5. **Return File Descriptor**:
+   - The `open()` function returns the file descriptor number to the process
+   - Process uses this fd for subsequent operations (read, write, close)
 
 ![Image](https://github.com/user-attachments/assets/ccd92654-3fd3-4ec2-ab34-757622a7ccd1)
 
-#### Example Flow:
-1. The process calls `open()` on `hello.txt`.
-2. A new **File Descriptor (fd0)** is created and linked to an entry in the **Open File Table**.
-3. The **Open File Table** entry points to the appropriate **I-node Table** entry, where file metadata and data block pointers are stored.
-  
 ---
 ## 🔒 2.4. File Locking in Linux
 
