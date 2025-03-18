@@ -41,7 +41,8 @@ To check the file type:
 ls -l filename
 file filename
 ```
-![Image](https://github.com/user-attachments/assets/10ebb6d0-f00b-41b2-b92a-08aba9cc9e08)
+
+![Image](https://github.com/user-attachments/assets/ef4f69fa-8d19-48e1-8e0b-cf54d7ecc0f0)
 
 ---
 
