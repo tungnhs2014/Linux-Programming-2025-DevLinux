@@ -33,7 +33,7 @@ int main(int argc, char const *argv[])
     for (int i = 0; i < 2; i++) {
         ret = pthread_join(threads[i], NULL);
 
-        // Check if joining the thread was successfuls
+        // Check if joining the thread
         if(ret) {
             printf("Error joining thread %d: %d\n", i + 1, ret);
             exit(EXIT_FAILURE);
