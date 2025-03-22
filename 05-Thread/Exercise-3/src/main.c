@@ -32,14 +32,14 @@ int main(int argc, char const *argv[])
 
     // Create the producer thread
     ret = pthread_create(&pro_thread, NULL, producer, NULL);
-    if(ret) {
+    if (ret) {
         perror("Error creating producer thread\n");
         exit(EXIT_FAILURE);
     }
     
     // Create the consumer thread
     ret = pthread_create(&cons_thread, NULL, consumer, NULL);
-    if(ret) {
+    if (ret) {
         perror("Error creating consumer thread\n");
         exit(EXIT_FAILURE);
     }
@@ -55,11 +55,60 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-
+// Producer thread function
 void* producer(void *arg) {
+    for (int i = 0; i < NUMBER_INTERATIONS; i++) {
+        // Lock the mutex before shared data
+        pthread_mutex_lock(&mutex);
 
+        // Generate a random number between 1 and 10
+        data = rand() % 10 + 1; 
+
+        printf("Producer: Generated data = %d\n", data);
+        
+        // Mark data ready
+        data_ready = 1;
+        
+        // Send signal the consumer that data is available 
+        pthread_cond_signal(&cond);
+
+        // Unlock the mutex
+        pthread_mutex_unlock(&mutex);
+
+        sleep(1);
+    }
+    pthread_exit(NULL);
 }
 
+// Consumer thread function
 void* consumer(void *arg) {
+    int value[NUMBER_INTERATIONS]; // Array to store consumed values
 
+    for (int i = 0; i < NUMBER_INTERATIONS; i++) {
+        // Lock the mutex before accessing shared data
+        pthread_mutex_lock(&mutex);
+        
+        // Wait until the producer signals that data is ready
+        while (data_ready == 0) {
+             pthread_cond_wait(&cond, &mutex);
+        }
+
+        value[i] = data;
+        printf("Consumer: Consumed data = %d\n", data);
+
+        // Reset the data ready flag
+        data_ready = 0;
+
+        // Unlock the mutex after consuming the data
+        pthread_mutex_unlock(&mutex);
+    }
+    
+    //Print all consumed values
+    printf("\nAll values read:\n");
+    for (int i = 0 ; i < NUMBER_INTERATIONS; i++) {
+        printf("Value: %d\t", value[i]);
+    }
+    printf("\n");
+
+    pthread_exit(NULL);
 }
