@@ -8,7 +8,7 @@
 
 long long counter = 0;  // Global counter variable
 
-pthread_mutex_t mutex;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Thread function prototype
 void* thread_counter(void* arg);

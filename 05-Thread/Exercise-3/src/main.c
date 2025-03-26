@@ -11,8 +11,8 @@ int data = 0;
 int data_ready = 0;
 
 // Mutex and condition variable
-pthread_mutex_t mutex;
-pthread_cond_t cond;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; 
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER; 
 
 // Thread function prototype
 void* producer(void *arg);
