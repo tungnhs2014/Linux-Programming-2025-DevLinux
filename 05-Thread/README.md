@@ -1,10 +1,10 @@
 # Thread
 
-## 1. Introduction and Working Principles
-### 1.1 What is a Thread?
+## 5.1. Introduction and Working Principles
+### 5.1.1 What is a Thread?
 A thread is the smallest unit of execution within a process. A process can have multiple threads, all sharing the same resources but executing independently. Using threads can enhance performance by efficiently utilizing CPU resources and enabling parallel processing.
 
-### 1.2 Operating Principles
+### 5.1.2 Operating Principles
 Similar to processes, threads are created to handle multiple tasks simultaneously (multi-tasking). Key characteristics of threads include:
 
 - A **process** is a program in execution, utilizing system resources.
@@ -18,7 +18,7 @@ Similar to processes, threads are created to handle multiple tasks simultaneousl
   <img src="https://github.com/user-attachments/assets/dc6703ae-20b2-473b-a5d0-60cc2e149aa4" width="50%">
 </p>
 
-### 1.3 Memory Management in Multithreading
+### 5.1.3 Memory Management in Multithreading
 In a multithreaded process, memory is organized as follows:
 - **Code Segment (Text Segment)**: Stores executable instructions shared among all threads.
 - **Data Segment (Initialized & Uninitialized Data - BSS)**: Contains global and static variables accessible to all threads.
@@ -27,8 +27,8 @@ In a multithreaded process, memory is organized as follows:
 
 ---
 
-## 2. Concurrency, Parallelism, and Context Switching
-### 2.1 Concurrency vs. Parallelism
+## 5.2. Concurrency, Parallelism, and Context Switching
+### 5.2.1 Concurrency vs. Parallelism
 Understanding the difference between **concurrency** and **parallelism** is crucial when working with threads:
 
 - **Concurrency** refers to handling multiple tasks by switching between them using **context switching**. In a single-core CPU, concurrency creates an illusion of simultaneous execution, but only one task is executed at a time.
@@ -42,7 +42,7 @@ Understanding the difference between **concurrency** and **parallelism** is cruc
 - **Concurrent execution**: A single-threaded web server handling multiple requests by switching between them rapidly.
 - **Parallel execution**: A multi-threaded video processing application encoding different video frames on separate CPU cores.
 
-### 2.2 Context Switching
+### 5.2.2 Context Switching
 **Context switching** is the process of storing and restoring the state of a thread or process when switching execution between them. It enables multitasking by allowing the CPU to execute multiple threads or processes efficiently.
 
 #### Context Switching Process:
@@ -61,7 +61,7 @@ Understanding the difference between **concurrency** and **parallelism** is cruc
 
 --- 
 
-## 3. Thread States and Lifecycle
+## 5.3. Thread States and Lifecycle
 A thread can be in different states during its lifecycle:
 - **Running**: Actively executing on the CPU.
 - **Ready**: Ready to execute but waiting for CPU allocation.
@@ -73,7 +73,7 @@ A thread can be in different states during its lifecycle:
   <img src="https://github.com/user-attachments/assets/cb2faf27-01e7-42fa-ab5e-3d4a82c1e972" width="500">
 </p>
 
-### 3.1 Full Thread Lifecycle
+### 5.3.1 Full Thread Lifecycle
 The thread lifecycle consists of multiple states and transitions:
 
 1. **Creation (Create)**: A thread starts in the **Ready** state after being created.
@@ -96,9 +96,9 @@ The Linux operating system manages thread states using the **scheduler** to deci
 
 ---
 
-## 4. Comparison Between Process and Thread
+## 5.4. Comparison Between Process and Thread
 
-### 4.1. Example
+### 5.4.1. Example
 Suppose we have a **network server** that needs to handle multiple client connections simultaneously. Below are two implementation approaches:
 
 #### **Method 1: Using Processes**
@@ -162,7 +162,7 @@ int main() {
 }
 ```
 
-### 4.2. Comparison Between Process and Thread
+### 5.4.2. Comparison Between Process and Thread
 | Criteria | Process | Thread |
 |----------|---------|--------|
 | **Memory** | Each process has its own separate memory space. | Threads share memory within the same process. |
@@ -172,20 +172,20 @@ int main() {
 | **Fault Impact** | A process crash does not affect other processes. | A thread crash may bring down the entire process. |
 | **ID** | Each process has a unique **Process ID (PID)**. | Each thread has a unique **Thread ID (TID)** within a process. |
 
-### 4.3. Thread ID in Multithreading Programming
+### 5.4.3. Thread ID in Multithreading Programming
 Each thread in a process has a **Thread ID (TID)** for identification. Key characteristics:
 
 - **PID (Process ID)** is globally unique, while **TID (Thread ID)** is unique only within a process.
 - **PID** is an integer, but **TID** may be a structure depending on the system.
 - **PID** is easy to print, whereas **TID** requires specific functions to retrieve its value.
 
-#### **4.3.1. Retrieving and Comparing Thread ID in POSIX Threads (pthreads)**
+#### **5.4.3.1. Retrieving and Comparing Thread ID in POSIX Threads (pthreads)**
 In pthreads, Thread ID is represented using `pthread_t`. Direct comparison is not allowed; instead, specific functions are used:
 
 - **pthread_self()**: Returns the Thread ID of the calling thread.
 - **pthread_equal(thread1, thread2)**: Compares two Thread IDs.
 
-#### **4.3.2. Detailed Example Using pthread_self() and pthread_equal()**
+#### **5.4.3.2. Detailed Example Using pthread_self() and pthread_equal()**
 ```c
 #include <stdio.h>
 #include <pthread.h>
@@ -216,7 +216,7 @@ int main() {
 }
 ```
 
-### 4.4. When to Use Process or Thread?
+### 5.4.4. When to Use Process or Thread?
 | Scenario | Use Process | Use Thread |
 |-----------|-------------|------------|
 | **Parallel execution on multiple CPU cores** | ✅ | ✅ |
@@ -226,9 +226,9 @@ int main() {
 
 ----
 
-## 5. Working with Threads in Linux
+## 5.5. Working with Threads in Linux
 
-### 5.1 Creating a New Thread
+### 5.5.1 Creating a New Thread
 A program starts execution as a **single-threaded** process, meaning it has only one execution flow. If a process creates additional threads, it becomes a **multi-threaded** process.
 
 Every process has at least one thread, which is called the **main thread**, responsible for executing the `main()` function.
@@ -268,7 +268,7 @@ int main() {
 }
 ```
 
-### 5.2 Terminating a Thread
+### 5.5.2 Terminating a Thread
 A thread can be terminated explicitly using `pthread_exit()`, or it will terminate automatically when the function it executes completes.
 
 ```c
@@ -305,16 +305,16 @@ Using `pthread_exit()` allows threads to return values and ensures proper cleanu
 
 --- 
 
-## 6. Managing Threads
+## 5.6. Managing Threads
 
-### 6.1 Thread Termination Methods
+### 5.6.1 Thread Termination Methods
 A thread can terminate in multiple ways:
 - The thread function completes execution naturally.
 - The thread explicitly calls `pthread_exit()`.
 - The thread is forcefully canceled using `pthread_cancel()`.
 - If any thread calls `exit()`, or if the **main thread** terminates, all remaining threads in the process will be terminated immediately.
 
-### 6.2 Using `pthread_exit()`
+### 5.6.2 Using `pthread_exit()`
 ```c
 void pthread_exit(void *retval);
 ```
@@ -342,7 +342,7 @@ int main() {
 }
 ```
 
-### 6.3 Canceling a Thread with `pthread_cancel()`
+### 5.6.3 Canceling a Thread with `pthread_cancel()`
 ```c
 int pthread_cancel(pthread_t thread);
 ```
@@ -374,7 +374,7 @@ int main() {
 }
 ```
 
-### 6.4 Joining Threads with `pthread_join()`
+### 5.6.4 Joining Threads with `pthread_join()`
 ```c
 int pthread_join(pthread_t thread, void **retval);
 ```
@@ -401,7 +401,7 @@ int main() {
 }
 ```
 
-### 6.5 Detaching a Thread with `pthread_detach()`
+### 5.6.5 Detaching a Thread with `pthread_detach()`
 ```c
 int pthread_detach(pthread_t thread);
 ```
@@ -433,18 +433,15 @@ int main() {
 ```
 --- 
 
-## 7. Thread Synchronization
-
-### 7.1 Introduction to Thread Synchronization
-
+## 5.7. Thread Synchronization
+### 5.7.1 Introduction to Thread Synchronization
 One of the greatest strengths of multithreading is the ability to share data between threads through global variables. However, this shared access introduces synchronization challenges that must be carefully managed.
 
 When multiple threads attempt to modify the same variable simultaneously or when one thread tries to read a variable while another is modifying it, race conditions can occur. These race conditions lead to unpredictable program behavior, data corruption, and difficult-to-debug issues.
 
 Thread synchronization provides mechanisms to coordinate thread execution and access to shared resources, ensuring data consistency and program correctness.
 
-### 7.2 Atomic vs. Nonatomic Operations
-
+### 5.7.2 Atomic vs. Nonatomic Operations
 #### Atomic Operations
 An atomic operation is one that appears to occur instantaneously from the perspective of other threads. Atomic operations guarantee that:
 - Only one thread can access a shared resource at any given time
@@ -455,14 +452,75 @@ Atomic operations are thread-safe but may come with performance costs.
 
 #### Nonatomic Operations
 Nonatomic operations allow multiple threads to access a shared resource simultaneously. While faster than atomic operations, they are not thread-safe and can lead to:
-- Race conditions
-- Data corruption
-- Inconsistent program states
+- **Race conditions:** A race condition occurs when multiple threads access and modify a shared variable at the same time, leading to unpredictable results.
+    ```c
+    #include <stdio.h>
+    #include <pthread.h>
+
+    int counter = 0;  // Shared resource
+
+    void* increment(void* arg) {
+        for (int i = 0; i < 1000000; i++) {
+            counter++;  // Nonatomic operation
+        }
+        return NULL;
+    }
+
+    int main() {
+        pthread_t t1, t2;
+        pthread_create(&t1, NULL, increment, NULL);
+        pthread_create(&t2, NULL, increment, NULL);
+        
+        pthread_join(t1, NULL);
+        pthread_join(t2, NULL);
+        
+        printf("Final counter value: %d\n", counter);
+        return 0;
+    }
+    ```
+    **Issue:**
+    + Since counter++ is not protected, both threads might read the same value, increment it, and write it back, leading to lost updates (data loss).
+    + The expected result is 2000000, but the actual result may be lower.
+
+- **Data corruption:** If one thread writes data while another reads it at the same time, the data may become corrupt or inconsistent.
+    ```c
+    #include <stdio.h>
+    #include <pthread.h>
+
+    char message[50] = "Hello, World!";
+
+    void* writer(void* arg) {
+        for (int i = 0; i < 10; i++) {
+            sprintf(message, "Thread %d writing", i);
+        }
+        return NULL;
+    }
+
+    void* reader(void* arg) {
+        for (int i = 0; i < 10; i++) {
+            printf("Reader reads: %s\n", message);
+        }
+        return NULL;
+    }
+
+    int main() {
+        pthread_t t1, t2;
+        pthread_create(&t1, NULL, writer, NULL);
+        pthread_create(&t2, NULL, reader, NULL);
+        
+        pthread_join(t1, NULL);
+        pthread_join(t2, NULL);
+        
+        return 0;
+    }
+    ```
+    **Issue:**
+    + Thread 1 (writer) may modify message while Thread 2 (reader) is reading it.
+    + The output may be truncated, inconsistent, or incorrect because the string is modified mid-read.
 
 Most operations in C/C++ are nonatomic by default unless explicitly synchronized.
 
-### 7.3 Critical Sections
-
+### 5.7.3 Critical Sections
 A critical section refers to a segment of code that accesses shared resources and must be executed atomically. During the execution of a critical section:
 - Only one thread can execute the code at a time
 - The execution cannot be interrupted by another thread accessing the same shared resource
@@ -470,7 +528,7 @@ A critical section refers to a segment of code that accesses shared resources an
 
 By properly identifying and protecting critical sections, we can ensure thread safety while minimizing performance impact.
 
-### 7.4 Mutex (Mutual Exclusion)
+### 5.7.4 Mutex (Mutual Exclusion)
 
 A mutex is a synchronization primitive that ensures exclusive access to a shared resource. It acts as a lock that prevents multiple threads from simultaneously executing critical sections.
 
@@ -572,20 +630,147 @@ int main() {
 Without the mutex, the final counter value would be unpredictable and likely less than the expected value due to race conditions.
 
 #### Mutex Deadlocks
+A deadlock occurs when two or more threads are waiting for each other to release a mutex (mutual exclusion lock), resulting in a permanent blocking state where no progress is made. Deadlocks happen when threads hold some locks while waiting for others, creating a cycle of dependencies.
 
-A deadlock occurs when a thread locks a mutex and cannot release it, permanently blocking other threads. Common causes include:
+##### Causes of Deadlocks
+1. **Self-deadlock**: A thread locks a mutex and then tries to lock the same mutex again without unlocking it first. Since a regular mutex is non-recursive, the second lock attempt blocks indefinitely, leading to a deadlock.
+```c
+#include <stdio.h>
+#include <pthread.h>
 
-1. **Self-deadlock**: A thread attempts to lock a mutex it already holds
-2. **Circular wait**: Thread A holds mutex X and waits for mutex Y, while Thread B holds mutex Y and waits for mutex X
-3. **Program errors**: Forgetting to unlock a mutex
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-To avoid deadlocks:
+void* thread_func(void* arg) {
+    pthread_mutex_lock(&mutex);  // First lock
+    printf("Thread acquired lock\n");
+
+    pthread_mutex_lock(&mutex);  // Second lock (deadlock)
+    printf("This will never print\n");
+
+    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
+    return NULL;
+}
+
+int main() {
+    pthread_t thread;
+    pthread_create(&thread, NULL, thread_func, NULL);
+    pthread_join(thread, NULL);
+    return 0;
+}
+```
+- **Issue:** The thread locks mutex, then locks it again without unlocking, causing self-deadlock.
+- **Solution:** 
+  + Use recursive mutexes (PTHREAD_MUTEX_RECURSIVE) if re-locking is necessary.
+  + Always ensure that a mutex is unlocked before trying to lock it again.
+
+
+2. **Circular wait**: A circular wait occurs when multiple threads hold different mutexes and wait for each other to release them. This creates a deadlock cycle where no thread can proceed.
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+pthread_mutex_t mutexA = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexB = PTHREAD_MUTEX_INITIALIZER;
+
+void* thread1_func(void* arg) {
+    pthread_mutex_lock(&mutexA);
+    printf("Thread 1 acquired Mutex A\n");
+
+    sleep(1);  // Simulate some work
+
+    pthread_mutex_lock(&mutexB);  // Waiting for mutexB (held by Thread 2)
+    printf("Thread 1 acquired Mutex B\n");
+
+    pthread_mutex_unlock(&mutexB);
+    pthread_mutex_unlock(&mutexA);
+    return NULL;
+}
+
+void* thread2_func(void* arg) {
+    pthread_mutex_lock(&mutexB);
+    printf("Thread 2 acquired Mutex B\n");
+
+    sleep(1);  // Simulate some work
+
+    pthread_mutex_lock(&mutexA);  // Waiting for mutexA (held by Thread 1)
+    printf("Thread 2 acquired Mutex A\n");
+
+    pthread_mutex_unlock(&mutexA);
+    pthread_mutex_unlock(&mutexB);
+    return NULL;
+}
+
+int main() {
+    pthread_t thread1, thread2;
+    pthread_create(&thread1, NULL, thread1_func, NULL);
+    pthread_create(&thread2, NULL, thread2_func, NULL);
+
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    return 0;
+}
+```
+- **Issue:** 
+    + Thread 1 locks Mutex A and waits for Mutex B.
+    + Thread 2 locks Mutex B and waits for Mutex A.
+    + Both threads wait forever, causing a deadlock.
+- **Solution**:
+    +  Always lock mutexes in a fixed order (e.g., always lock mutexA before mutexB).
+    +  Avoid holding multiple locks at the same time when possible.
+    +  Use timeouts with pthread_mutex_timedlock() to detect deadlocks.
+
+3. **Mutex Not Released (Forgotten Unlock)**
+A thread locks a mutex but fails to unlock it, causing all other threads waiting for that mutex to be blocked forever.
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void* thread_func(void* arg) {
+    pthread_mutex_lock(&mutex);
+    printf("Thread acquired the lock\n");
+
+    // Forgot to unlock the mutex before returning
+    return NULL;
+}
+
+int main() {
+    pthread_t thread1, thread2;
+    pthread_create(&thread1, NULL, thread_func, NULL);
+    pthread_create(&thread2, NULL, thread_func, NULL);
+
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    return 0;
+}
+```
+- **Issue:** If thread_func returns without unlocking mutex, other threads waiting for it will be blocked forever.
+- **Solution:**
+    + Always unlock a mutex after using it (pthread_mutex_unlock(&mutex)).
+    + Use RAII (Resource Acquisition Is Initialization) in C++ to automatically release locks (std::lock_guard<std::mutex>).
+    + Add error handling to check whether the mutex was unlocked correctly.
+
+##### To avoid deadlocks:
 - Always unlock mutexes in the reverse order they were locked
 - Use timeouts with `pthread_mutex_timedlock()`
+```c
+struct timespec timeout;
+clock_gettime(CLOCK_REALTIME, &timeout);
+timeout.tv_sec += 2; // Timeout after 2 seconds
+
+if (pthread_mutex_timedlock(&mutex, &timeout) == 0) {
+    // Critical section
+    pthread_mutex_unlock(&mutex);
+} else {
+    printf("Mutex lock timeout! Avoiding deadlock.\n");
+}
+```
 - Consider using recursive mutexes for special cases
 - Maintain consistent lock ordering across the program
 
-### 7.5 Condition Variables
+### 5.7.5 Condition Variables
 
 While mutexes control access to shared resources, condition variables allow threads to synchronize based on the value of data. They enable a thread to block until notified by another thread that a specific condition has occurred.
 
@@ -750,7 +935,7 @@ In this example:
 3. Each thread signals the appropriate condition after modifying the buffer
 4. The mutex ensures that buffer operations are atomic
 
-### 7.6 Read-Write Locks
+### 5.7.6 Read-Write Locks
 
 Read-write locks (rwlocks) are a synchronization mechanism that allows multiple threads to read shared data concurrently while ensuring exclusive access when a thread needs to modify the data.
 
@@ -969,7 +1154,7 @@ In this example:
 2. Writer threads have exclusive access when updating the dictionary
 3. The read-write lock efficiently handles concurrent access while maintaining data integrity
 
-### 7.7 Semaphores
+### 5.7.7 Semaphores
 
 Semaphores are synchronization primitives that maintain a count and can be used to control access to a resource with multiple instances. Unlike mutexes, semaphores can allow multiple threads to access a resource up to a set limit.
 

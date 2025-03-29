@@ -25,3 +25,12 @@
 ### 🔑 4.3. Signal Management and Control
 ### 📡 4.4. Practical Examples
 ### 🔒 4.5. Best Practices and Summary
+
+## 5. Thread
+### 🌟 5.1. Introduction and Working Principles
+### 🔄 5.2. Concurrency, Parallelism, and Context
+### 🔍 5.3. Thread States and Lifecycle
+### ⚖️ 5.4. Comparison Between Process and Thread
+### 🛠️ 5.5. Working with Threads in Linux
+### 🔧 5.6. Managing Threads
+### 🔒 5.7. Thread Synchronization
