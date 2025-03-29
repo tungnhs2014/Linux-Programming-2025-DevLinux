@@ -13,6 +13,10 @@ Similar to processes, threads are created to handle multiple tasks simultaneousl
 - If one thread is blocked, other threads within the same process can continue executing.
 - Each thread has its own **stack segment**, separate from other threads in the same process.
 - **Context switching** occurs when switching between threads to preserve their execution state.
+  
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/dc6703ae-20b2-473b-a5d0-60cc2e149aa4" width="50%">
+</p>
 
 ### 1.3 Memory Management in Multithreading
 In a multithreaded process, memory is organized as follows:
@@ -29,6 +33,10 @@ Understanding the difference between **concurrency** and **parallelism** is cruc
 
 - **Concurrency** refers to handling multiple tasks by switching between them using **context switching**. In a single-core CPU, concurrency creates an illusion of simultaneous execution, but only one task is executed at a time.
 - **Parallelism** means executing multiple tasks simultaneously using multiple processing units. For example, Task 1 runs on CPU Core 1 while Task 2 runs on CPU Core 2 at the same time, without requiring context switching between them.
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/557ec12a-b86d-4300-bca2-ad549a876d4c" width="50%">
+</p>
 
 #### Example:
 - **Concurrent execution**: A single-threaded web server handling multiple requests by switching between them rapidly.
@@ -60,6 +68,10 @@ A thread can be in different states during its lifecycle:
 - **Blocked**: Waiting for a resource (I/O, mutex, semaphore).
 - **Suspended**: Temporarily paused but can resume execution later.
 - **Terminated**: Finished execution or forcefully stopped.
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/cb2faf27-01e7-42fa-ab5e-3d4a82c1e972" width="500">
+</p>
 
 ### 3.1 Full Thread Lifecycle
 The thread lifecycle consists of multiple states and transitions:
@@ -220,6 +232,10 @@ int main() {
 A program starts execution as a **single-threaded** process, meaning it has only one execution flow. If a process creates additional threads, it becomes a **multi-threaded** process.
 
 Every process has at least one thread, which is called the **main thread**, responsible for executing the `main()` function.
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/d8124904-927e-4461-96ea-ed8ff9e2a248" width="400">
+</p>
 
 To create a new thread in Linux, use the `pthread_create()` function:
 
