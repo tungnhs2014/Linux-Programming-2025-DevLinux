@@ -47,7 +47,43 @@ $ ./bin/exam
 
 ### Example output
 ```bash
+Writer 1 update data to: 1
+Writer 2 update data to: 2
+Reader 1 reads data: 2
+Reader 2 reads data: 2
+Reader 3 reads data: 2
+Reader 4 reads data: 2
+Reader 5 reads data: 2
+Reader 1 reads data: 2
+Reader 2 reads data: 2
+Reader 4 reads data: 2
+Reader 3 reads data: 2
+Reader 5 reads data: 2
+Writer 1 update data to: 3
+Writer 2 update data to: 4
+Reader 1 reads data: 4
+Reader 5 reads data: 4
+Reader 2 reads data: 4
+Reader 4 reads data: 4
+Reader 3 reads data: 4
+Reader 1 reads data: 4
+Reader 2 reads data: 4
+Reader 5 reads data: 4
+Reader 4 reads data: 4
+Reader 3 reads data: 4
+Writer 1 update data to: 5
+Writer 2 update data to: 6
+Reader 1 reads data: 6
+Reader 5 reads data: 6
+Reader 2 reads data: 6
+Reader 3 reads data: 6
+Reader 4 reads data: 6
+Writer 1 update data to: 7
+Writer 2 update data to: 8
+Writer 1 update data to: 9
+Writer 2 update data to: 10
 
+Final value of data: 10
 ```
 
 ### Clean the project

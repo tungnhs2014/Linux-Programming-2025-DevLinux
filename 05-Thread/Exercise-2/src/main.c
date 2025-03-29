@@ -18,9 +18,6 @@ int main(int argc, char const *argv[])
     pthread_t threads[NUM_THREADS];
     int ret;
 
-    // Initialize the mutex before using it
-    pthread_mutex_init(&mutex, NULL);
-
     // Create threads
     for (int i = 0; i < NUM_THREADS; i++) {
         ret = pthread_create(&threads[i], NULL, thread_counter, NULL);
