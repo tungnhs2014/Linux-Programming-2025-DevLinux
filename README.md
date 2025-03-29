@@ -49,7 +49,9 @@ This repository serves as a learning resource and reference for Linux programmin
 git clone https://github.com/tungnhs2014/Linux-Programming-2025-DevLinux.git
 cd Linux-Programming-2025-DevLinux
 ```
+
 2️⃣ Read, run the examples, and complete the exercises!
+
 3️⃣ Become a Linux system programming expert!
 
 ---
