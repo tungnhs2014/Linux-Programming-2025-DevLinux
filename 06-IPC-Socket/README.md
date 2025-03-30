@@ -9,7 +9,7 @@
     + Protocol: Determines how data is packaged and transmitted.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/f59fa01f-9b0b-4fed-a7a7-90e070290265" width="300">
+  <img src="https://github.com/user-attachments/assets/f59fa01f-9b0b-4fed-a7a7-90e070290265" width="450">
 </p>
 
 ### 6.1.2. Socket Domains
@@ -25,7 +25,7 @@
 - Requires network protocol processing.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5a0fe7e6-16d8-458a-97e8-109db05d0790" width="300">
+  <img src="https://github.com/user-attachments/assets/5a0fe7e6-16d8-458a-97e8-109db05d0790" width="500">
 </p>
 
 
@@ -50,7 +50,7 @@
     + For AF_INET/SOCK_DGRAM, the default is UDP
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/32188714-5284-4480-b4ee-e798790a325d" width="300">
+  <img src="https://github.com/user-attachments/assets/32188714-5284-4480-b4ee-e798790a325d" width="500">
 </p>
 
 ---
@@ -66,7 +66,7 @@
     6. Either side can close the connection when finished
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/628f38a7-fb48-484b-bd4d-4975ed4c13aa" width="50%">
+  <img src="https://github.com/user-attachments/assets/4444c27b-3afc-4762-baef-840f8c7ec15e" width="50%">
 </p>
 
 ### 6.2.2. Datagram Socket Flow (Connectionless)
@@ -158,7 +158,7 @@ struct in6_addr {              /* IPv6 address structure */
   + **Big-endian:** Stores the most significant byte at the lowest memory address (used by some RISC architectures).
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e6f64732-95ca-4b45-bdfe-5a5df2eedc3b" width="50%">
+  <img src="https://github.com/user-attachments/assets/e6f64732-95ca-4b45-bdfe-5a5df2eedc3b" width="60%">
 </p>
 
 - To ensure consistent communication across different architectures, network protocols standardize on a single byte order called "network byte order," which is big-endian. This means:
