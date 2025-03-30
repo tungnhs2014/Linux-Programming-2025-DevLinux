@@ -1,10 +1,10 @@
 # Thread
 
 ## 5.1. Introduction and Working Principles
-### 5.1.1 What is a Thread?
+### 5.1.1. What is a Thread?
 A thread is the smallest unit of execution within a process. A process can have multiple threads, all sharing the same resources but executing independently. Using threads can enhance performance by efficiently utilizing CPU resources and enabling parallel processing.
 
-### 5.1.2 Operating Principles
+### 5.1.2. Operating Principles
 Similar to processes, threads are created to handle multiple tasks simultaneously (multi-tasking). Key characteristics of threads include:
 
 - A **process** is a program in execution, utilizing system resources.
@@ -18,7 +18,7 @@ Similar to processes, threads are created to handle multiple tasks simultaneousl
   <img src="https://github.com/user-attachments/assets/dc6703ae-20b2-473b-a5d0-60cc2e149aa4" width="50%">
 </p>
 
-### 5.1.3 Memory Management in Multithreading
+### 5.1.3. Memory Management in Multithreading
 In a multithreaded process, memory is organized as follows:
 - **Code Segment (Text Segment)**: Stores executable instructions shared among all threads.
 - **Data Segment (Initialized & Uninitialized Data - BSS)**: Contains global and static variables accessible to all threads.
@@ -28,7 +28,7 @@ In a multithreaded process, memory is organized as follows:
 ---
 
 ## 5.2. Concurrency, Parallelism, and Context Switching
-### 5.2.1 Concurrency vs. Parallelism
+### 5.2.1. Concurrency vs. Parallelism
 Understanding the difference between **concurrency** and **parallelism** is crucial when working with threads:
 
 - **Concurrency** refers to handling multiple tasks by switching between them using **context switching**. In a single-core CPU, concurrency creates an illusion of simultaneous execution, but only one task is executed at a time.
@@ -42,7 +42,7 @@ Understanding the difference between **concurrency** and **parallelism** is cruc
 - **Concurrent execution**: A single-threaded web server handling multiple requests by switching between them rapidly.
 - **Parallel execution**: A multi-threaded video processing application encoding different video frames on separate CPU cores.
 
-### 5.2.2 Context Switching
+### 5.2.2. Context Switching
 **Context switching** is the process of storing and restoring the state of a thread or process when switching execution between them. It enables multitasking by allowing the CPU to execute multiple threads or processes efficiently.
 
 #### Context Switching Process:
@@ -73,7 +73,7 @@ A thread can be in different states during its lifecycle:
   <img src="https://github.com/user-attachments/assets/cb2faf27-01e7-42fa-ab5e-3d4a82c1e972" width="500">
 </p>
 
-### 5.3.1 Full Thread Lifecycle
+### 5.3.1. Full Thread Lifecycle
 The thread lifecycle consists of multiple states and transitions:
 
 1. **Creation (Create)**: A thread starts in the **Ready** state after being created.
@@ -228,7 +228,7 @@ int main() {
 
 ## 5.5. Working with Threads in Linux
 
-### 5.5.1 Creating a New Thread
+### 5.5.1. Creating a New Thread
 A program starts execution as a **single-threaded** process, meaning it has only one execution flow. If a process creates additional threads, it becomes a **multi-threaded** process.
 
 Every process has at least one thread, which is called the **main thread**, responsible for executing the `main()` function.
@@ -268,7 +268,7 @@ int main() {
 }
 ```
 
-### 5.5.2 Terminating a Thread
+### 5.5.2. Terminating a Thread
 A thread can be terminated explicitly using `pthread_exit()`, or it will terminate automatically when the function it executes completes.
 
 ```c
@@ -307,14 +307,14 @@ Using `pthread_exit()` allows threads to return values and ensures proper cleanu
 
 ## 5.6. Managing Threads
 
-### 5.6.1 Thread Termination Methods
+### 5.6.1. Thread Termination Methods
 A thread can terminate in multiple ways:
 - The thread function completes execution naturally.
 - The thread explicitly calls `pthread_exit()`.
 - The thread is forcefully canceled using `pthread_cancel()`.
 - If any thread calls `exit()`, or if the **main thread** terminates, all remaining threads in the process will be terminated immediately.
 
-### 5.6.2 Using `pthread_exit()`
+### 5.6.2. Using `pthread_exit()`
 ```c
 void pthread_exit(void *retval);
 ```
@@ -342,7 +342,7 @@ int main() {
 }
 ```
 
-### 5.6.3 Canceling a Thread with `pthread_cancel()`
+### 5.6.3. Canceling a Thread with `pthread_cancel()`
 ```c
 int pthread_cancel(pthread_t thread);
 ```
@@ -374,7 +374,7 @@ int main() {
 }
 ```
 
-### 5.6.4 Joining Threads with `pthread_join()`
+### 5.6.4. Joining Threads with `pthread_join()`
 ```c
 int pthread_join(pthread_t thread, void **retval);
 ```
@@ -401,7 +401,7 @@ int main() {
 }
 ```
 
-### 5.6.5 Detaching a Thread with `pthread_detach()`
+### 5.6.5. Detaching a Thread with `pthread_detach()`
 ```c
 int pthread_detach(pthread_t thread);
 ```
@@ -434,14 +434,14 @@ int main() {
 --- 
 
 ## 5.7. Thread Synchronization
-### 5.7.1 Introduction to Thread Synchronization
+### 5.7.1. Introduction to Thread Synchronization
 One of the greatest strengths of multithreading is the ability to share data between threads through global variables. However, this shared access introduces synchronization challenges that must be carefully managed.
 
 When multiple threads attempt to modify the same variable simultaneously or when one thread tries to read a variable while another is modifying it, race conditions can occur. These race conditions lead to unpredictable program behavior, data corruption, and difficult-to-debug issues.
 
 Thread synchronization provides mechanisms to coordinate thread execution and access to shared resources, ensuring data consistency and program correctness.
 
-### 5.7.2 Atomic vs. Nonatomic Operations
+### 5.7.2. Atomic vs. Nonatomic Operations
 #### Atomic Operations
 An atomic operation is one that appears to occur instantaneously from the perspective of other threads. Atomic operations guarantee that:
 - Only one thread can access a shared resource at any given time
@@ -520,7 +520,7 @@ Nonatomic operations allow multiple threads to access a shared resource simultan
 
 Most operations in C/C++ are nonatomic by default unless explicitly synchronized.
 
-### 5.7.3 Critical Sections
+### 5.7.3. Critical Sections
 A critical section refers to a segment of code that accesses shared resources and must be executed atomically. During the execution of a critical section:
 - Only one thread can execute the code at a time
 - The execution cannot be interrupted by another thread accessing the same shared resource
@@ -528,7 +528,7 @@ A critical section refers to a segment of code that accesses shared resources an
 
 By properly identifying and protecting critical sections, we can ensure thread safety while minimizing performance impact.
 
-### 5.7.4 Mutex (Mutual Exclusion)
+### 5.7.4. Mutex (Mutual Exclusion)
 
 A mutex is a synchronization primitive that ensures exclusive access to a shared resource. It acts as a lock that prevents multiple threads from simultaneously executing critical sections.
 
@@ -770,7 +770,7 @@ if (pthread_mutex_timedlock(&mutex, &timeout) == 0) {
 - Consider using recursive mutexes for special cases
 - Maintain consistent lock ordering across the program
 
-### 5.7.5 Condition Variables
+### 5.7.5. Condition Variables
 
 While mutexes control access to shared resources, condition variables allow threads to synchronize based on the value of data. They enable a thread to block until notified by another thread that a specific condition has occurred.
 
@@ -935,7 +935,7 @@ In this example:
 3. Each thread signals the appropriate condition after modifying the buffer
 4. The mutex ensures that buffer operations are atomic
 
-### 5.7.6 Read-Write Locks
+### 5.7.6. Read-Write Locks
 
 Read-write locks (rwlocks) are a synchronization mechanism that allows multiple threads to read shared data concurrently while ensuring exclusive access when a thread needs to modify the data.
 
@@ -1154,7 +1154,7 @@ In this example:
 2. Writer threads have exclusive access when updating the dictionary
 3. The read-write lock efficiently handles concurrent access while maintaining data integrity
 
-### 5.7.7 Semaphores
+### 5.7.7. Semaphores
 
 Semaphores are synchronization primitives that maintain a count and can be used to control access to a resource with multiple instances. Unlike mutexes, semaphores can allow multiple threads to access a resource up to a set limit.
 
