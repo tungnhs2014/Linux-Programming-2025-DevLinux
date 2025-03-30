@@ -1,14 +1,16 @@
-# Build exercise 7
+# Build Chat Application
 
 # Compiler and tools
 CC = gcc
-CFLAGS = -pthread -Wall
+CFLAGS = -pthread -Wall -g -I$(INC_DIR)
 
 # Directory structure
 CUR_DIR := .
+INC_DIR := $(CUR_DIR)/inc
 SRC_DIR := $(CUR_DIR)/src
 OBJ_DIR := $(CUR_DIR)/obj
 BIN_DIR := $(CUR_DIR)/bin
+LOG_DIR := $(CUR_DIR)/log
 
 # Find all .c files in src/
 SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
@@ -17,10 +19,10 @@ SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
 # Ensure necessary directories exist before compiling
-$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR))
+$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR) $(LOG_DIR)) 
 
 # Define output file names
-EXEC = $(BIN_DIR)/exam
+EXEC = $(BIN_DIR)/chat_app
 
 # Build target
 all: $(EXEC)
@@ -33,8 +35,16 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 $(EXEC): $(OBJ_FILES)
 	$(CC) $(CFLAGS) $(OBJ_FILES) -o $@
 
+# Run Valgrind to check for memory leak
+valgrind-check: $(EXEC)
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes  $(EXEC) 8000
+
+# Check for memory leaks using Valgrind and log output
+valgrind-log: $(EXEC)
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes  $(EXEC) 8000 2>&1 | tee $(LOG_DIR)/valgrind.log
+
 # Clean all compiled files
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(OBJ_DIR) $(BIN_DIR) $(LOG_DIR)
 
-.PHONY: all clean
+.PHONY: all clean valgrind-check valgrind-log

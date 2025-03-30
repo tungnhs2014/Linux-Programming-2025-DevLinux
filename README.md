@@ -41,6 +41,14 @@ This repository serves as a learning resource and reference for Linux programmin
 #### 🔧 5.6. Managing Threads
 #### 🔒 5.7. Thread Synchronization
 
+### 6. IPC Socket
+#### 🚀 6.1. Introduction to Socket Communication
+#### 🔄 6.2. Socket Communication Flow
+#### 🛠️ 6.3. Internet Domain Sockets
+#### 🔧 6.4. Unix Domain Sockets
+
+### 7. Mini Project - Chat Application
+
 --- 
 
 ## 🚀 Get Started in 3 Steps  
