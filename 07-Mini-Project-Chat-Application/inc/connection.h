@@ -26,7 +26,7 @@ typedef struct
 // Connection management functions
 int initialize_socket(device *dev, int port);
 int connect_to_device(device *dev, const char *ip, int port, int id);
-int disconnet_device(device *dev);
+int disconnect_device(device *dev);
 void print_device_list(device *device_list, int total_devices);
 void disconnect_all_device(device *device_list, int total_decvices);
 

@@ -13,7 +13,7 @@ void print_error(const char *message){
 
 // Display port number
 void print_my_port(int port) {
-    printf("My port is :%d\n", port);
+    printf("My port is: %d\n", port);
 }
 
 // Get and display IP address

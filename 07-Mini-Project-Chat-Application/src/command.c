@@ -1,5 +1,6 @@
 #include "command.h"
 #include "connection.h"
+#include "message.h"
 #include "utils.h"
 #include <stdio.h>
 #include <string.h>
@@ -70,18 +71,65 @@ void process_command(char *command_line) {
             print_my_port(this_device.port_num);
             break;
 
-        case CMD_CONNECT:
-            break;
+        case CMD_CONNECT: {
+            char ip[IP_LEN];
+            int port;
+            if (sscanf(command_line, "%*s %s %d", ip, &port) < 2) {
+                print_error("Invalid input: Usage: connect <ip> <port>");
+                break;
+            }
 
+            if (connect_to_device(&device_connect_to[total_device_to], ip, port, total_device_to) == 0) {
+                total_device_to++;
+            }
+            break;
+        }
+            
         case CMD_LIST:
             print_device_list(device_connect_to, total_device_to);
             break;
         
-        case CMD_SEND: 
+        case CMD_SEND: {
+            char message[256];
+            int id;
+
+            if (sscanf(command_line, "%*s %d %[^\n]", &id, message) < 2) {
+                print_error("Invalid input. Usage: send <id> <message>");
+                break;
+            }
+            
+            int found = 0;
+            for (int i = 0; i < total_device_to; i++) {
+                if (id == device_connect_to[i].id) {
+                    if(send_message(device_connect_to[i], message) == 0) {
+                        print_error("FAILED to send message");
+                    }
+                    found = 1;
+                }
+            }
+            if (!found) {
+                printf("ERROR: Device with ID %d not found.\n", id);
+            }
+
             break;
-        
-        case CMD_TERMINATE:
+        }
+
+        case CMD_TERMINATE: {
+            int id; 
+            if (sscanf(command_line, "%*s %d", &id) < 1) {
+                print_error("Invalid input. Usage: terminate <id>");
+                break;
+            }
+            for (int i = 0; i < total_device_to; i++) {
+                if (id == device_connect_to[i].id) {
+                    if(disconnect_device(&device_connect_to[i])) {
+                        print_error("FAILED to disconnect device");
+                        break;
+                    }
+                }
+            }
             break;
+        }
         
         case CMD_EXIT:
             disconnect_all_device(device_connect_to, total_device_to);

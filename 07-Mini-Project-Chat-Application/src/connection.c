@@ -51,7 +51,6 @@ int initialize_socket(device *dev, int port) {
     return 0;
 }
 
-
 // Thread function for handling incoming connections
 void *accept_connection_handler(void *args) {
     int client_fd;
@@ -66,26 +65,27 @@ void *accept_connection_handler(void *args) {
             print_error("Accept new device failed");
             return NULL;
         }
+
+        // Save newly connected device information
+        device_connect_from[total_device_from].fd = client_fd;          // Store socket descriptor
+        device_connect_from[total_device_from].id = total_device_from;   // Assign a unique ID
+        device_connect_from[total_device_from].addr = client_addr;      // Store client address
+        device_connect_from[total_device_from].port_num = ntohs(client_addr.sin_port); // / Get port in host byte order
+
+        // Convert the binary IP address to a string representation
+        inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, device_connect_from[total_device_from].my_ip, IP_LEN);
+
+        // Print information about the new connection
+        printf("\nNew connection from IP: %s, Port: %d\n", device_connect_from[total_device_from].my_ip, device_connect_from[total_device_from].port_num);
+        
+        // Create a thread to receive messages from newly connected device
+        if (pthread_create(&receive_thread_id, NULL, receive_message_handler, &device_connect_from[total_device_from])) {
+        print_error("Can not create thread to recived message"); 
+        }
+        total_device_from++;
+        
     }
-
-    // Save newly connected device information
-    device_connect_from[total_device_from].fd = client_fd;          // Store socket descriptor
-    device_connect_from[total_device_from].id = total_device_from;   // Assign a unique ID
-    device_connect_from[total_device_from].addr = client_addr;      // Store client address
-    device_connect_from[total_device_from].port_num = ntohs(client_addr.sin_port); // / Get port in host byte order
-
-    // Convert the binary IP address to a string representation
-    inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, device_connect_from[total_device_from].my_ip, IP_LEN);
-
-    // Print information about the new connection
-    printf("\nNew connection from IP: %s, Port: %d\n", device_connect_from[total_device_from].my_ip, device_connect_from[total_device_from].port_num);
-    
-    // Create a thread to receive messages from newly connected device
-    if (pthread_create(&receive_thread_id, NULL, receive_message_handler, &device_connect_from[total_device_from])) {
-       print_error("Can not create thread to recived message"); 
-    }
-    total_device_from++;
-    // pthread_join(receive_thread_id, NULL);
+    pthread_join(receive_thread_id, NULL);
 }   
 
 /*
@@ -110,8 +110,36 @@ void print_device_list(device *device_list, int total_devices) {
 }
 
 
+// Connect to another device
+int connect_to_device(device *dev, const char *ip, int port, int id) {
+    dev->fd = socket(AF_INET, SOCK_STREAM, 0);
+    dev->id = id;
+    dev->port_num = port;
+    strncpy(dev->my_ip, ip, IP_LEN -1);
+    dev->my_ip[IP_LEN - 1] = '\0'; // Ensure null-termination
+
+    dev->addr.sin_family = AF_INET;
+    dev->addr.sin_port = htons(dev->port_num);
+    inet_pton(AF_INET, dev->my_ip, &dev->addr.sin_addr.s_addr);
+
+    if (connect(dev->fd, (struct sockaddr*)&dev->addr, sizeof(dev->addr)) == 0) {
+        printf("Connected to IP: %s, Port: %d\n", ip, port);
+        return 0;
+    }
+    else {
+        print_error("Connection failed");
+        return -1;
+    }
+}
+
 // Disconnect from a device
 int disconnect_device(device *dev) {
+    char message[100];
+
+    // Notify other device that the connection has been terminated
+    snprintf(message, sizeof(message), "The connection at port %d has just been terminated\n", dev->port_num);
+    send_message(*dev, message);
+
     dev->fd = -1; // Mark as disconnected
     return 0;
 }

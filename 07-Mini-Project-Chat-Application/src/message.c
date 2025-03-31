@@ -1,6 +1,23 @@
 #include "message.h"
 #include "utils.h"
 
+
+// Send message to a connected device
+int send_message(device dev, const char *message) {
+    // Check if the device is still connected
+    if (dev.fd < 0) {
+        print_error("This device has just terminated\n");
+        return 0;
+    }
+
+    // Send message to device via socket
+    if (write(dev.fd, message, strlen(message)) < 0) {
+        print_error("Can not send message");
+        return 0;
+    }
+    return 1;
+}
+
 // Thread function to handle receiving messages
 void* receive_message_handler(void *arg) {
     device *recv_dev = (device *)arg;
