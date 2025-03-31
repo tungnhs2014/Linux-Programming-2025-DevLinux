@@ -2,7 +2,7 @@
 
 # Compiler and tools
 CC = gcc
-CFLAGS = -pthread -Wall -g -I$(INC_DIR)
+CFLAGS = -lpthread -Wall -g -I$(INC_DIR)
 
 # Directory structure
 CUR_DIR := .

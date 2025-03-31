@@ -1,6 +1,42 @@
 #include "command.h"
+#include "connection.h"
 #include "utils.h"
 #include <stdio.h>
+#include <string.h>
+
+extern device this_device;
+extern device device_connect_to[MAX_CLIENT];
+extern int total_device_to;
+
+// Get numeric code for command
+Command get_command_code(const char *command) {
+    if (!strcmp(command, "help")) {
+        return CMD_HELP;
+    }
+    if (!strcmp(command, "myip")) {
+        return CMD_MYIP;
+    }
+    if (!strcmp(command, "myport")) {
+        return CMD_MYPORT;
+    }
+    if (!strcmp(command, "connect")) {
+        return CMD_CONNECT;
+    }
+    if (!strcmp(command, "list")) {
+        return CMD_LIST;
+    }
+    if (!strcmp(command, "terminate")) {
+        return CMD_TERMINATE;
+    }
+    if (!strcmp(command, "send")) {
+        return CMD_SEND;
+    }
+    if (!strcmp(command, "exit")) {
+        return CMD_EXIT;
+    }
+
+    return CMD_INVALID;
+}
 
 // Print the list of available command
 void print_command_list() {
@@ -14,4 +50,49 @@ void print_command_list() {
     printf("terminate <id>               : Disconnect with device at id\n");
     printf("exit                         : Close application\n");
     printf("************************************************************\n");
+}
+
+// Process a command entered by the user
+void process_command(char *command_line) {
+    char command_option[10];
+    sscanf(command_line, "%s", command_option);  // Sao chép lệnh vào command_option
+
+    switch(get_command_code(command_option)) {
+        case CMD_HELP:
+            print_command_list();
+            break;
+
+        case CMD_MYIP:
+            print_my_ip(this_device.my_ip);
+            break;
+
+        case CMD_MYPORT:
+            print_my_port(this_device.port_num);
+            break;
+
+        case CMD_CONNECT:
+            break;
+
+        case CMD_LIST:
+            print_device_list(device_connect_to, total_device_to);
+            break;
+        
+        case CMD_SEND: 
+            break;
+        
+        case CMD_TERMINATE:
+            break;
+        
+        case CMD_EXIT:
+            disconnect_all_device(device_connect_to, total_device_to);
+            printf("**************************************************************************\n");
+            printf("-----------------------ENDING PROGRAM-------------------------------------\n");
+            printf("**************************************************************************\n");
+            exit(0);
+            break;
+            
+        default:
+            printf("INVALID command.\n");
+            break;
+    }
 }

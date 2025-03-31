@@ -2,7 +2,7 @@
 
 # Compiler and tools
 CC = gcc
-CFLAGS = -pthread
+CFLAGS = -lpthread
 
 # Directory structure
 CUR_DIR := .
