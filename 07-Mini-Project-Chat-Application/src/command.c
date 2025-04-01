@@ -4,10 +4,12 @@
 #include "utils.h"
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 
 extern device this_device;
 extern device device_connect_to[MAX_CLIENT];
 extern int total_device_to;
+extern pthread_t accept_thread_id;
 
 // Get numeric code for command
 Command get_command_code(const char *command) {
@@ -136,6 +138,8 @@ void process_command(char *command_line) {
             printf("**************************************************************************\n");
             printf("-----------------------ENDING PROGRAM-------------------------------------\n");
             printf("**************************************************************************\n");
+            pthread_cancel(accept_thread_id);
+            pthread_join(accept_thread_id, NULL);
             exit(0);
             break;
             

@@ -19,7 +19,7 @@ SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
 # Ensure necessary directories exist before compiling
-$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR) $(LOG_DIR)) 
+$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR)) 
 
 # Define output file names
 EXEC = $(BIN_DIR)/chat_app
@@ -28,7 +28,7 @@ EXEC = $(BIN_DIR)/chat_app
 all: $(EXEC)
 
 # Rule to compile object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Rule to link the final executable
@@ -37,14 +37,16 @@ $(EXEC): $(OBJ_FILES)
 
 # Run Valgrind to check for memory leak
 valgrind-check: $(EXEC)
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes  $(EXEC) 8000
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(EXEC) 8000
 
 # Check for memory leaks using Valgrind and log output
 valgrind-log: $(EXEC)
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes  $(EXEC) 8000 2>&1 | tee $(LOG_DIR)/valgrind.log
+	mkdir -p $(LOG_DIR)
+	nohup valgrind --leak-check=full --show-leak-kinds=all ./bin/chat_app 8000 > log/valgrind.log 2>&1 &
 
 # Clean all compiled files
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR) $(LOG_DIR)
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(LOG_DIR)
 
 .PHONY: all clean valgrind-check valgrind-log
