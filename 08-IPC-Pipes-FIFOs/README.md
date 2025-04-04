@@ -1,7 +1,7 @@
 # IPC - Pipes and FIFOs
 
-## 1. Introduction to Pipes
-### 1.1. Definition
+## 8.1. Introduction to Pipes
+### 8.1.1. Definition
 - Pipes are an Inter-Process Communication (IPC) mechanism used for communication between related processes in Linux.
 - Pipes are unidirectional, meaning data flows in only one direction: one process writes to the pipe while another reads from it.
 - They provide a simple yet effective method for parent-child process communication.
@@ -10,7 +10,7 @@
   <img src="https://github.com/user-attachments/assets/9fa07748-8abc-467c-ac85-276cc8aa9446" alt="Image" width="400"/>
 </p>
 
-### 1.2. Pipe Operation
+### 8.1.2. Pipe Operation
 - When a pipe is created, it exists in RAM as a **"virtual file"** with a fixed buffer size (typically 65536 bytes in modern Linux systems).
 - Pipes can be created before forking processes to establish communication channels between **parent and child processes**.
 - Data written to a pipe by one process can be read by another related process.
@@ -21,20 +21,20 @@
 </p>
 
 
-#### 1.2.1. Reading from a pipe
+#### 8.1.2.1. Reading from a pipe
 - When attempting to read from an empty pipe, the reading process blocks until at least one byte becomes available.
 - If all write ends of a pipe are closed, a read operation will return all remaining data and then return 0 (EOF).
 - This ensures processes synchronize naturally when exchanging data.
 
-#### 1.2.2. Pipes have a limited capacity
+#### 8.1.2.2. Pipes have a limited capacity
 - Pipes have a limited capacity (buffer size).
 - When a pipe is full, the writing process blocks until some data is read from the pipe.
 - If all read ends of a pipe are closed, a write operation will cause the writing process to receive a SIGPIPE signal, which by default terminates the process.
 
 --- 
 
-## 2. Creating and Using Pipes
-### 2.1. Creating Pipes
+## 8.2. Creating and Using Pipes
+### 8.2.1. Creating Pipes
 - Pipes are created using the `pipe()`system call.
 - To enable communication between parent and child processes, the pipe must be created before calling `fork()`.
 
@@ -104,101 +104,387 @@ int main() {
 }
 ```
 
-### 2.2. Bidirectional Communication
+### 8.2.2. Bidirectional Communication
 - A single pipe allows communication in only one direction.
 - For bidirectional communication, two pipes are needed - one for each direction.
 - When implementing bidirectional communication, care must be taken to avoid deadlock situations where both processes are blocked waiting for each other.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e6991e17-1fcc-44bc-b451-35014ac77f9b" alt="Two-way Pipe Communication" width="400"/>
+  <img src="https://github.com/user-attachments/assets/e6991e17-1fcc-44bc-b451-35014ac77f9b" alt="Two-way Pipe Communication" width="500"/>
 </p>
 
-
-- Parent đóng vai trò writer.
-- Child đóng vai trò reader.
+- Parent plays the rolo of `Writer`.
+- Child plays the role of `Reader`.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/fa51ed86-96d3-49ca-abb2-f1c676725b36" alt="Parent as Writer - Child as Reader" width="400"/>
+  <img src="https://github.com/user-attachments/assets/fa51ed86-96d3-49ca-abb2-f1c676725b36" alt="Parent as Writer - Child as Reader" width="500"/>
 </p>
 
+- Parent plays the role of `Reader`.
+- Child plays the role of `Writer`.
 
-- Parent đóng vai trò reader.
-- Child đóng vai trò writer.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f0b83f9c-6666-4e8c-9d0e-b9407c6c3608" alt="Parent as Reader - Child as Writer" width="500"/>
+</p>
 
-![Image](https://github.com/user-attachments/assets/f0b83f9c-6666-4e8c-9d0e-b9407c6c3608)
+### 8.2.3. Important Considerations for Pipe Usage
+- To avoid resource leaks, always close unused pipe ends immediately after fork().
+- Resources are only fully freed when all file descriptors referring to the pipe are closed.
+- To prevent deadlocks, ensure a clear communication protocol between processes.
+- Check return values of read() and write() to handle potential errors.
 
 --- 
 
-## 3. FIFOs – named Pipes
-### 3.1. Định nghĩa
-- Đây là một khái niệm mở rộng của pipes. Pipes truyền thống thì không được đặt tên và chỉ tồn tại trong suốt vòng đời của process.
-- Sự khác biệt chính là FIFOs có tên trong hệ thống tệp và được mở giống như một tệp thông thường.
-- Named Pipes có thể tồn tại miễn là hệ thống còn hoạt động. Vượt ra ngoài vòng đời của process. Có thể xóa đi nếu không còn sử dụng.
-- Một file FIFO là một file đặc biệt được lưu trong bộ nhớ cục bộ. được tạo ra bởi hàm mkfifo() trong C. 
+## 8.3. FIFOs – Named Pipes
+### 8.3.1. Definition
+- FIFOs (First In, First Out) or named pipes extend the concept of pipes by providing a named entity in the filesystem.
+- Unlike anonymous pipes, FIFOs persist in the filesystem and can be used for communication between unrelated processes.
+- FIFOs exist independently of process lifetimes and can be explicitly deleted when no longer needed.
+- A FIFO appears as a special file in the filesystem, created using the `mkfifo()` function or the mkfifo command.
 
-### 3.2. Tạo FIFOs từ trình shell
--  Lệnh: mkfifo [ -m mode ] pathname
-    + Ex: mkfifo -m 0666 ./helloFIFO
+### 8.3.2. Creating FIFOs from the Shell
+- Command syntax: `mkfifo [-m mode] pathname`
+- Example: mkfifo -m 0666 ./myfifo
+- Note the `'p'` at the beginning of the permissions string, indicating it's a pipe file.
 
-![Image](https://github.com/user-attachments/assets/ec3a4ff3-ec47-48e1-8b30-52d6fd4eb481)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ec3a4ff3-ec47-48e1-8b30-52d6fd4eb481" alt="mkfifo Command Example" width="500"/>
+</p>
 
-### 3.3. Tạo FIFOs từ source code
-- mkfifo().
-- FIFOs là một loại tệp, chúng ta có thể sử dụng tất cả các lệnh gọi hệ thống được liên kết với nó i.e. open, read, write, close.
+### 8.3.3. Creating FIFOs from Source Code
+- FIFOs can be programmatically created using the `mkfifo()` function
 ```c
+#include <sys/types.h>
+#include <sys/stat.h>
+
 int mkfifo(const char *pathname, mode_t mode);
 ```
+- Parameters:
+  + `pathname:` The name and path for the FIFO file
+  + `mode:` Permission bits for the FIFO (similar to file permissions)
+- Returns 0 on success, -1 on failure
 
-- Tạo một FIFO mới với đường dẫn cụ thể. Trả về hai file descriptor (fd) nằm trong fds.
-- Các đối số:
-    + pathname:	tên file FIFO.	
-    + mode: các quyền đối với file FIFO.
-    + Trả về 0 nếu thành công, -1 nếu thất bại.
+#### Example of creating and using a FIFO:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
 
+// Writer program
+int main() {
+    int fd;
+    char message[] = "Hello through FIFO!";
+    
+    // Create the FIFO if it doesn't exist
+    mkfifo("./myfifo", 0666);
+    
+    printf("Opening FIFO for writing...\n");
+    fd = open("./myfifo", O_WRONLY);
+    
+    printf("Writing message: %s\n", message);
+    write(fd, message, strlen(message) + 1);
+    
+    close(fd);
+    printf("Writer closed\n");
+    
+    return 0;
+}
+```
+- And the reader program:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-## 4. Xây dựng mô hình Client-Server với FIFOs
-Bài toán: Xây dựng một mô hình client server sử dụng FIFOs.
-### 4.1 B1: Thiết lập kết nối
-- Làm sao để clients biết tới server?
-- well-know address/name.
-   + Vị trí cố định.
-- Server được định danh.
-  + Cung cấp nhiều services.
-  + Client phải request tới để đăng kí.
-  + Thêm chi phí (tiền, lập trình).
+// Reader program
+int main() {
+    int fd;
+    char buffer[100];
+    
+    // Open the FIFO for reading
+    printf("Opening FIFO for reading...\n");
+    fd = open("./myfifo", O_RDONLY);
+    
+    // Read from FIFO
+    read(fd, buffer, sizeof(buffer));
+    printf("Message received: %s\n", buffer);
+    
+    close(fd);
+    printf("Reader closed\n");
+    
+    return 0;
+}
+```
 
-### 4.2 Xử lý yêu cầu kết nối. 
-- Nhiều clients request, không thể sử dụng 1 FIFO để xử lý toàn bộ
+### 8.3.4. FIFO Access and I/O Modes
+- By default, opening a FIFO blocks until another process opens the same FIFO for the opposite access mode.
+- Opening a FIFO for reading blocks until some process opens it for writing, and vice versa.
+- This behavior can be modified by using the O_NONBLOCK flag with open().
 
-#### Server
-- Tạo một FIFO xử lý request.
-- Xử lý bản tin request.
-  + Check key.
-  + Check service.
-  + Giới hạn số lượng kết nối.
-- Gửi ack chấp nhận/không chấp nhận request.
+---
 
-#### Client
-- Tạo FIFO gửi nhận bản tin
-  + Tên = TEMPLATE+PID
-- Đóng bản tin request 
-  + Tên
-  + Yêu cầu service nào.
-  + Key
-- Gửi request tới server
-  + Server chấp nhận ---> Gửi nhận dữ liệu
-  + Server ko chấp nhận ---> Hủy bỏ FIFO
+## 8.4. Building a Client-Server Model with FIFOs
+### 8.4.1. Establishing Connections
+To create a client-server architecture using FIFOs:
+1. Well-known address approach:
+   - The server creates a well-known FIFO with a predefined name and location.
+   - Clients know this name/location and can connect to the server through it.
+2. Server identification:
+   - Server provides multiple services.
+   - Clients must request specific services when connecting.
+   - This may require additional programming and overhead.
 
-### 4.3: Xử lý bản tin.
-- Nhớ lại rằng dữ liệu trong đường ống và FIFO là một luồng byte, ranh giới giữa nhiều bản tin không được bảo toàn.
-- Điều này có nghĩa là khi nhiều bản tin gửi đến một quá trình, chẳng hạn như server, thì người gửi và người nhận phải đồng ý về một số quy ước để tách các thư. 
-  + Kết thúc mỗi thư bằng ký tự phân cách.
-    + Ký tự không bao giờ xuất hiện như một phần của bản tin.
-    + Quá trình đọc thông báo phải quét dữ liệu từ FIFO từng byte một cho đến khi tìm thấy ký tự phân tách.
-- Bao gồm header có kích thước cố định với trường độ dài trong mỗi bản tin.
-    + Hiệu quả  đối với các bản tin có kích thước tùy ý.
-    + Dẫn đến sự cố nếu bản tin không đúng định dạng.
-- Sử dụng các bản tin có độ dài cố định và yêu cầu server luôn đọc các bản tin có kích thước cố định này.
-    + Điều này có lợi thế là đơn giản để lập trình.
-    + Dung lượng kênh truyền bị lãng phí.
-    + Nếu một tin nhắn không có độ dài phù hợp, thì tất cả các tin nhắn tiếp theo sẽ bị lệch. Trong trường hợp này, server không thể khôi phục dễ dàng.
+### 8.4.2. Handling Connection Requests 
+#### Server Implementation
+1. Create a well-known FIFO for handling client requests.
+2. Process client requests by:
+  - Validating authentication (if required).
+  - Checking requested service availability.
+  - Managing connection limits.
+3. Send acceptance/rejection acknowledgment to clients.
+
+#### Client Implementation
+1. Create a client-specific FIFO for receiving responses (typically using a pattern like `client_fifo_<PID>`)
+2. Prepare and send a connection request containing:
+  - Client identification (name/PID).
+  - Requested service.
+  - Authentication key (if required)
+3. Process server response:
+  - If accepted, begin data exchange.
+  - If rejected, clean up the client-specific FIFO and exit
+#### Example server implementation:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+
+#define SERVER_FIFO "/tmp/server_fifo"
+#define CLIENT_FIFO_TEMPLATE "/tmp/client_%d_fifo"
+#define MAX_CLIENTS 10
+
+typedef struct {
+    pid_t client_pid;
+    char service[32];
+    char key[16];
+} request_t;
+
+typedef struct {
+    int status; // 0 = rejected, 1 = accepted
+    char message[64];
+} response_t;
+
+int main() {
+    int server_fd, client_fd;
+    request_t request;
+    response_t response;
+    char client_fifo[64];
+    int connected_clients = 0;
+    
+    // Create server FIFO
+    mkfifo(SERVER_FIFO, 0666);
+    
+    // Open server FIFO for reading requests
+    server_fd = open(SERVER_FIFO, O_RDONLY);
+    if (server_fd == -1) {
+        perror("open server fifo");
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("Server started. Waiting for client requests...\n");
+    
+    while (1) {
+        // Read client request
+        if (read(server_fd, &request, sizeof(request_t)) == sizeof(request_t)) {
+            printf("Request from client PID %d for service: %s\n", 
+                   request.client_pid, request.service);
+            
+            // Check if we can accept this client
+            if (connected_clients < MAX_CLIENTS && strcmp(request.key, "valid_key") == 0) {
+                response.status = 1;
+                strcpy(response.message, "Connection accepted");
+                connected_clients++;
+            } else {
+                response.status = 0;
+                strcpy(response.message, "Connection rejected");
+            }
+            
+            // Send response to client-specific FIFO
+            sprintf(client_fifo, CLIENT_FIFO_TEMPLATE, request.client_pid);
+            client_fd = open(client_fifo, O_WRONLY);
+            
+            if (client_fd != -1) {
+                write(client_fd, &response, sizeof(response_t));
+                close(client_fd);
+                
+                printf("Response sent to client %d: %s\n", 
+                       request.client_pid, response.message);
+            }
+        }
+    }
+    
+    // Cleanup
+    close(server_fd);
+    unlink(SERVER_FIFO);
+    
+    return 0;
+}
+```
+
+#### Example client implementation:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+
+#define SERVER_FIFO "/tmp/server_fifo"
+#define CLIENT_FIFO_TEMPLATE "/tmp/client_%d_fifo"
+
+typedef struct {
+    pid_t client_pid;
+    char service[32];
+    char key[16];
+} request_t;
+
+typedef struct {
+    int status; // 0 = rejected, 1 = accepted
+    char message[64];
+} response_t;
+
+int main() {
+    int server_fd, client_fd;
+    request_t request;
+    response_t response;
+    char client_fifo[64];
+    
+    // Create client-specific FIFO
+    sprintf(client_fifo, CLIENT_FIFO_TEMPLATE, getpid());
+    mkfifo(client_fifo, 0666);
+    
+    // Prepare request
+    request.client_pid = getpid();
+    strcpy(request.service, "data_service");
+    strcpy(request.key, "valid_key");
+    
+    // Send request to server
+    server_fd = open(SERVER_FIFO, O_WRONLY);
+    if (server_fd == -1) {
+        perror("Cannot open server FIFO");
+        unlink(client_fifo);
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("Sending connection request to server...\n");
+    write(server_fd, &request, sizeof(request_t));
+    close(server_fd);
+    
+    // Wait for server response
+    printf("Waiting for server response...\n");
+    client_fd = open(client_fifo, O_RDONLY);
+    
+    if (read(client_fd, &response, sizeof(response_t)) == sizeof(response_t)) {
+        printf("Server response: %s\n", response.message);
+        
+        if (response.status == 1) {
+            printf("Connection established! Ready for data exchange.\n");
+            // Data exchange would happen here
+        } else {
+            printf("Connection rejected by server.\n");
+        }
+    }
+    
+    // Cleanup
+    close(client_fd);
+    unlink(client_fifo);
+    
+    return 0;
+}
+```
+
+### 8.4.3. Message Handling in FIFO Communication
+- Since data in pipes and FIFOs is just a byte stream with no inherent message boundaries, applications must implement their own message framing protocols. There are several common approaches:
+#### 8.4.3.1. Delimiter-Based Messages
+- End each message with a special character that never appears in the message content.
+- The reader must scan the byte stream for the delimiter.
+- Example: Using newline ('\n') as a delimiter
+```c
+// Writer
+char message[] = "Hello from client\n";
+write(fifo_fd, message, strlen(message));
+
+// Reader
+char buffer[1024];
+int i = 0;
+char c;
+
+while (read(fifo_fd, &c, 1) > 0) {
+    if (c == '\n') {
+        buffer[i] = '\0';
+        // Process complete message in buffer
+        i = 0;
+    } else {
+        buffer[i++] = c;
+    }
+}
+```
+#### 8.4.3.2. Length-Prefixed Messages
+- Include a fixed-size header containing the message length.
+- More efficient for arbitrary-sized messages.
+- More complex to implement.
+```c
+// Message structure
+typedef struct {
+    uint32_t length;  // 4 bytes for message length
+    char data[];      // Flexible array member
+} message_t;
+
+// Writer
+uint32_t msg_len = strlen(message_content);
+message_t *msg = malloc(sizeof(message_t) + msg_len);
+msg->length = msg_len;
+memcpy(msg->data, message_content, msg_len);
+write(fifo_fd, msg, sizeof(message_t) + msg_len);
+free(msg);
+
+// Reader
+message_t header;
+read(fifo_fd, &header, sizeof(message_t));
+char *buffer = malloc(header.length + 1);
+read(fifo_fd, buffer, header.length);
+buffer[header.length] = '\0';
+// Process message in buffer
+free(buffer);
+```
+
+#### 8.4.3.3. Fixed-Length Messages
+- Use messages of a predetermined, fixed size.
+- Simple to implement but potentially wastes bandwidth.
+- Risk of message misalignment if one message is incorrect.
+```c
+#define MSG_SIZE 256
+
+// Writer
+char message[MSG_SIZE] = {0};
+strcpy(message, "Hello from client");
+write(fifo_fd, message, MSG_SIZE);
+
+// Reader
+char buffer[MSG_SIZE];
+read(fifo_fd, buffer, MSG_SIZE);
+// Process message in buffer
+```
+

@@ -49,6 +49,11 @@ This repository serves as a learning resource and reference for Linux programmin
 
 ### 7. Mini Project - Chat Application
 
+### 8. IPC - Pipes and FIFOs
+#### 📤 8.1. Introduction to Pipes
+#### 🧵 8.2. Creating and Using Pipes
+#### 📦 8.3. FIFOs – Named Pipes
+#### 🧩 8.4. Building a Client-Server Model with FIFOs
 --- 
 
 ## 🚀 Get Started in 3 Steps  
