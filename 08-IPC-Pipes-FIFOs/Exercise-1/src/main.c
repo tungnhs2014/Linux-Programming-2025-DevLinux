@@ -34,7 +34,7 @@ int main(int argc, char const *argv[])
         close(fd[0]);
 
         // Write message to the pipe
-        write(fd[1], message, strlen(message) + 1);
+        write(fd[1], message, strlen(message) + 1); // +1 is used to include null characters ('\0')
         
         // Close write and end after writing is complete
         close(fd[1]);
