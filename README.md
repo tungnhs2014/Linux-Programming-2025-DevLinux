@@ -54,6 +54,12 @@ This repository serves as a learning resource and reference for Linux programmin
 #### 🧵 8.2. Creating and Using Pipes
 #### 📦 8.3. FIFOs – Named Pipes
 #### 🧩 8.4. Building a Client-Server Model with FIFOs
+
+### 9. IPC - Message Queues
+#### 💬 9.1. Introduction to IPC (Inter-Process Communication)
+#### 📨 9.2. System V Message Queues
+#### 📬 9.3. POSIX Message Queues
+#### ⚖️ 9.4. Comparison Between System V and POSIX Message Queues
 --- 
 
 ## 🚀 Get Started in 3 Steps  
