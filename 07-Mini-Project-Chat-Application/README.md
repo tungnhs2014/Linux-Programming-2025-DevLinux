@@ -76,11 +76,11 @@ Run the application with a port number:
 ### Memory Leak Checking
 Valgrind can be used to check for memory leaks:
 ```bash
-maek valgrind-check
+make valgrind-check
 ```
 Valgrind can be used to check for memory leaks and save log:
 ```bash
-maek valgrind-log
+make valgrind-log
 ```
 
 ## Example Session

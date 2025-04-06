@@ -47,8 +47,6 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
-    // pthread_join(accept_thread_id, NULL);
-
     char command[256];
     while (1) {
         printf("Enter command: ");
