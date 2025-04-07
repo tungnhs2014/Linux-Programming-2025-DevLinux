@@ -45,7 +45,11 @@ $ ./bin/exam
 
 ### Example Run
 ```bash
-
+Parent process ID: 3571
+Child process ID: 3572
+[Parent] Sending message: Hello TungNHS
+[Child] Message received: Hello TungNHS
+[Parent] Cleaning up message queue...
 ```
 
 ### Clean the project
