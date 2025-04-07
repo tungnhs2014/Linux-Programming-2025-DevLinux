@@ -53,7 +53,7 @@ int main(int argc, char const *argv[])
 
         // Open the queue for reading 
         mq = mq_open(QUEUE_NAME, O_RDONLY);
-        if (-1 == mq) {
+        if ((mqd_t)(-1) == mq) {
             perror("[Child] mq_open_faield");
             exit(EXIT_FAILURE);
         }
@@ -66,7 +66,7 @@ int main(int argc, char const *argv[])
             - MAX_MSG_SIZE: Maximum number of bytes to receive
             - NULL: Don't store priority value
         */
-        if((mqd_t)(-1) == mq_receive(mq, buffer, MAX_MSG_SIZE, NULL)) {
+        if(-1 == mq_receive(mq, buffer, MAX_MSG_SIZE, NULL)) {
             perror("[Child] mq_receive failed\n");
             mq_close(mq);
             exit (EXIT_FAILURE);
@@ -94,7 +94,7 @@ int main(int argc, char const *argv[])
             - strlen(message) + 1: Length of message (including null terminator)
             - MSG_PRIO: Priority of this message
         */
-        if((mqd_t)(-1) == mq_send(mq, message, strlen(message) + 1, MSG_PRIO)) {
+        if(-1 == mq_send(mq, message, strlen(message) + 1, MSG_PRIO)) {
             perror("[Parent] mq_send failed\n");
             mq_close(mq);
             mq_unlink(QUEUE_NAME);

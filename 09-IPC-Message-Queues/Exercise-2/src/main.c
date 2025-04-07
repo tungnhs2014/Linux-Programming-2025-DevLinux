@@ -58,10 +58,90 @@ int main(int argc, char const *argv[])
         mq_unlink(QUEUE_PARENT_TO_CHILD);
         exit(EXIT_FAILURE);
     }
+
     // Child process
     else if (0 == pid) {
         printf("[Child] Process ID: %d\n", getpid());
+
+        // Clear buffer before receiving message
+        memset(buffer, 0, MAX_MSG_SIZE);
+        // Receive message from parent
+        if (-1 == mq_receive(mq_parent_to_child, buffer, MAX_MSG_SIZE, NULL)) {
+            perror("[Child] mq_receive failed\n");
+            mq_close(mq_parent_to_child);
+            mq_close(mq_child_to_parent);
+            exit(EXIT_FAILURE);
+        }
+        
+        // Display the received message
+        printf("[Child] Message received: %s\n", buffer);
+
+        // Count charaters in the receive string
+        count = strlen(buffer);
+        printf("[Child] Character count: %d\n", count);
+
+        // Convert count to string for sending
+        sprintf(buffer, "%u", count);
+
+        // Sending character count back o parent process
+        if(-1 == mq_send(mq_child_to_parent, buffer, strlen(buffer) + 1, MSG_PRIO)) {
+            perror("[Child] mq_send failed\n");
+            mq_close(mq_parent_to_child);
+            mq_close(mq_child_to_parent);
+            exit(EXIT_FAILURE);
+        }
+
+        // Close message queues
+        mq_close(mq_parent_to_child);
+        mq_close(mq_child_to_parent);
+        exit(EXIT_SUCCESS);
     } 
+
+    // Parent process
+    else {
+        printf("[Parent] Process ID: %d\n", getpid());
+        
+        // Message to send child process
+        const char *message = "Hello, I am TungNHS";
+
+        // Send message t child
+        printf("[Parent] Sending message to child: %s\n", message);
+        if (-1 == mq_send(mq_parent_to_child, message, strlen(message) + 1, MSG_PRIO)) {
+            perror("[Parent] mq_send failed\n");
+            mq_close(mq_parent_to_child);
+            mq_close(mq_child_to_parent);
+            mq_unlink(QUEUE_PARENT_TO_CHILD);
+            mq_unlink(QUEUE_CHILD_TO_PARENT);
+            exit(EXIT_FAILURE);
+        }
+        
+        // Clear buffer before receving messaage
+        memset(buffer, 0, MAX_MSG_SIZE);
+
+        // Recevice character count from child
+        if (-1 == mq_receive(mq_child_to_parent, buffer, MAX_MSG_SIZE, NULL)) {
+            perror("[Parent] mq_receive failed\n");
+            mq_close(mq_parent_to_child);
+            mq_close(mq_child_to_parent);
+            mq_unlink(QUEUE_PARENT_TO_CHILD);
+            mq_unlink(QUEUE_CHILD_TO_PARENT);
+            exit(EXIT_FAILURE);
+        }
+
+        // Display character count receive from child
+        printf("[Parent] Character count received from child: %s\n", buffer);
+
+        waitpid(pid, &status, 0);
+
+        // Clean up message queue
+        printf("[Parent] Cleaning up message queues...\n");
+        mq_close(mq_parent_to_child);
+        mq_close(mq_child_to_parent);
+        mq_unlink(QUEUE_PARENT_TO_CHILD);
+        mq_unlink(QUEUE_CHILD_TO_PARENT);
+
+        exit(EXIT_SUCCESS);        
+    }
 
     return 0;
 }

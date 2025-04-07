@@ -47,7 +47,13 @@ $ ./bin/exam
 
 ### Example Run
 ```bash
-
+[Parent] Process ID: 6262
+[Parent] Sending message to child: Hello, I am TungNHS
+[Child] Process ID: 6263
+[Child] Message received: Hello, I am TungNHS
+[Child] Character count: 19
+[Parent] Character count received from child: 19
+[Parent] Cleaning up message queues...
 ```
 
 ### Clean the project
