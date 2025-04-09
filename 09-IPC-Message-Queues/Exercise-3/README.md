@@ -46,7 +46,12 @@ $ ./bin/exam
 
 ### Example Run
 ```bash
-
+[Parent] Process ID: 3747
+[Parent] Sending message from PID: 3747
+[Child 1] Process ID: 3748
+[Child 2] Process ID: 3749
+Child 2 received message: HELLO TUNGNHS NGUYEN HUU SON TUNG!
+[Parent] Done.
 ```
 
 ### Clean the project

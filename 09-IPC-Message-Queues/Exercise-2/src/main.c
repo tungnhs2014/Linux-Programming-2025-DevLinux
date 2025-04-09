@@ -65,6 +65,7 @@ int main(int argc, char const *argv[])
 
         // Clear buffer before receiving message
         memset(buffer, 0, MAX_MSG_SIZE);
+        
         // Receive message from parent
         if (-1 == mq_receive(mq_parent_to_child, buffer, MAX_MSG_SIZE, NULL)) {
             perror("[Child] mq_receive failed\n");
