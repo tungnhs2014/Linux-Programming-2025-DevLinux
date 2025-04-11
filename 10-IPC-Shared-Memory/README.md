@@ -14,7 +14,7 @@ The main aspects of IPC include:
 **Examples of common IPC mechanisms:** Pipes, FIFOs, Message Queues, Semaphores, Shared Memory, Sockets.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/3c5fb086-13c9-4faa-8a4c-cade552614a9" alt="IPC Mechanisms Diagram" width="500"/>
+  <img src="https://github.com/user-attachments/assets/3c5fb086-13c9-4faa-8a4c-cade552614a9" alt="IPC Mechanisms Diagram" width="850"/>
   <br/>
   <em>Figure 1: Model of Inter-Process Communication (IPC)</em>
 </p>
@@ -24,7 +24,7 @@ The main aspects of IPC include:
 Shared Memory is an efficient IPC mechanism that allows two or more processes to **directly access the same region of physical memory (RAM)**. The kernel allocates a memory segment and then maps this segment into the virtual address space of the processes requesting access.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/3125df9c-68b6-40ec-b170-1964834de116" alt="Process Virtual Address Space Diagram" width="500"/>
+  <img src="https://github.com/user-attachments/assets/3125df9c-68b6-40ec-b170-1964834de116" alt="Process Virtual Address Space Diagram" width="650"/>
   <br/>
   <em>Figure 2: Illustration of a process's virtual address space. The Shared Memory/Mapped region is typically located in the higher part of the address space, separate from the Stack and Heap.</em>
 </p>
@@ -126,7 +126,7 @@ int shmdt(const void *shmaddr);
 *   `shmaddr` (for `shmdt`): The pointer returned by `shmat()`.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/f587682f-4116-4056-a16b-c0e866d77a53" width="400"/>
+  <img src="https://github.com/user-attachments/assets/f587682f-4116-4056-a16b-c0e866d77a53" width="650"/>
   <br/>
   <em>Figure 3: Illustration of `shmat` mapping a segment into a process's address space.</em>
 </p>
@@ -178,7 +178,7 @@ struct ipc_perm {
 ```
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c34e8c29-047c-468b-9bdd-36a9807ce32e" width="400"/>
+  <img src="https://github.com/user-attachments/assets/c34e8c29-047c-468b-9bdd-36a9807ce32e" width="650"/>
   <br/>
   <em>Figure 4: Illustration of the `shmctl` function.</em>
 </p>
@@ -415,7 +415,7 @@ int munmap(void *addr, size_t length);
 *   `addr`, `length` (for `munmap`): The pointer and size returned by `mmap()`.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c34e8c29-047c-468b-9bdd-36a9807ce32e" width="500"/>
+  <img src="https://github.com/user-attachments/assets/c34e8c29-047c-468b-9bdd-36a9807ce32e" width="650"/>
   <br/>
   <em>Figure 5: Table comparing Memory Mapping types. POSIX Shared Memory uses "Shared file mapping" (mapping a file-like object shared between processes).</em>
 </p>
