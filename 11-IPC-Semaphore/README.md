@@ -30,7 +30,7 @@ There are two main types (APIs) for semaphores on *nix systems:
 At its core, a semaphore is typically an integer value maintained by the kernel. Its value is constrained to be non-negative (>= 0). Processes interact with the semaphore using atomic operations provided by the system APIs.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/79a5be18-7592-4758-aee4-27bbf19b5204" alt="Semaphore Wait and Post Logic" width="600"/>
+  <img src="https://github.com/user-attachments/assets/16fda96a-d6b2-4e6c-a7ab-55fda8717ee6" alt="Semaphore Wait and Post Logic" width="600"/>
   <br/>
   <em>Figure 11.1: Conceptual flow of Semaphore Wait (P) and Post (V) operations.</em>
 </p>
