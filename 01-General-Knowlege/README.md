@@ -102,10 +102,6 @@ LDFLAGS += -lm         # Link with math library (libm.so)
 LDFLAGS += -lpthread   # Link with POSIX threads library
 ```
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/5db5072e-7e56-4bc8-ace0-1f6731e08b48" alt="Compiler Flags" width="70%">
-</p>
-
 #### Automatic Variables
 
 Automatic variables are special predefined variables that reference parts of the rule dynamically:
@@ -124,10 +120,6 @@ Automatic variables are special predefined variables that reference parts of the
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 ```
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/809cc837-1c27-4510-bd1a-79c4db3a2c1b" alt="Automatic Variables" width="70%">
-</p>
 
 ### 1.1.4. Makefile Functions
 
@@ -148,9 +140,6 @@ Makefile functions are built-in utilities that process strings, manipulate files
 | `$(filter pattern,text)` | Keeps elements matching pattern | `C_FILES = $(filter %.c,$(FILES))` |
 | `$(filter-out pattern,text)` | Removes elements matching pattern | `NON_C_FILES = $(filter-out %.c,$(FILES))` |
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/9fc44982-dfb8-4881-9769-23043b442c56" alt="Makefile Functions" width="70%">
-</p>
 
 ### 1.1.5. Phony Targets
 
@@ -237,10 +226,6 @@ This example shows how to:
 ## 1.2. The Process of Compiling a C Program
 
 Compiling a C program involves four main stages: preprocessing, compilation, assembly, and linking. Understanding these stages is crucial for effective debugging and optimization.
-
-<p align="center">
-  <img width="70%" alt="C Compilation Process" src="https://user-images.githubusercontent.com/25842535/173225313-9f60c01a-87bc-4c02-b401-a0eb17d8181c.png">
-</p>
 
 ### 1.2.1. Preprocessing
 
@@ -403,10 +388,6 @@ A **static library** is an archive of object files (`.o`) that are linked direct
 3. At **build time**, the linker extracts needed object files from the archive
 4. The extracted code is directly incorporated into the final executable
 
-<p align="center">
-  <img width="70%" alt="Static Library Diagram" src="https://user-images.githubusercontent.com/25842535/173225359-dd4cc2f3-8b66-4f41-babb-c9b58c30ea04.png">
-</p>
-
 #### Advantages of Static Libraries
 
 ✅ **Self-contained executables**: No external library dependencies at runtime  
@@ -516,10 +497,6 @@ A **shared library** (also called dynamic library) contains code that is loaded 
 2. At **build time**, the linker only includes references to the library
 3. At **runtime**, the dynamic linker loads the library into memory
 4. Multiple programs can share the same copy of the library in memory
-
-<p align="center">
-  <img width="70%" alt="Shared Library Diagram" src="https://user-images.githubusercontent.com/25842535/173225380-c7d2c2b0-b2a4-4e12-a7c7-b98dce7a9a9d.png">
-</p>
 
 #### Advantages of Shared Libraries
 
