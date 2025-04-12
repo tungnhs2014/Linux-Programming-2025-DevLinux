@@ -1,4 +1,4 @@
-# Thread
+# 5. Thread
 
 ## 5.1. Introduction and Working Principles
 ### 5.1.1. What is a Thread?
@@ -15,7 +15,7 @@ Similar to processes, threads are created to handle multiple tasks simultaneousl
 - **Context switching** occurs when switching between threads to preserve their execution state.
   
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/dc6703ae-20b2-473b-a5d0-60cc2e149aa4" width="50%">
+  <img src="https://github.com/user-attachments/assets/dc6703ae-20b2-473b-a5d0-60cc2e149aa4" width="70%" alt="Process and Thread Structure">
 </p>
 
 ### 5.1.3. Memory Management in Multithreading
@@ -35,7 +35,7 @@ Understanding the difference between **concurrency** and **parallelism** is cruc
 - **Parallelism** means executing multiple tasks simultaneously using multiple processing units. For example, Task 1 runs on CPU Core 1 while Task 2 runs on CPU Core 2 at the same time, without requiring context switching between them.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/557ec12a-b86d-4300-bca2-ad549a876d4c" width="50%">
+  <img src="https://github.com/user-attachments/assets/557ec12a-b86d-4300-bca2-ad549a876d4c" width="70%" alt="Concurrency vs Parallelism">
 </p>
 
 #### Example:
@@ -59,7 +59,7 @@ Understanding the difference between **concurrency** and **parallelism** is cruc
 - **CPU Overhead**: Storing and restoring thread states consumes processing time.
 - **Memory Usage**: Requires space to save multiple thread/process states.
 
---- 
+---
 
 ## 5.3. Thread States and Lifecycle
 A thread can be in different states during its lifecycle:
@@ -70,7 +70,7 @@ A thread can be in different states during its lifecycle:
 - **Terminated**: Finished execution or forcefully stopped.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/cb2faf27-01e7-42fa-ab5e-3d4a82c1e972" width="500">
+  <img src="https://github.com/user-attachments/assets/cb2faf27-01e7-42fa-ab5e-3d4a82c1e972" width="70%" alt="Thread Lifecycle">
 </p>
 
 ### 5.3.1. Full Thread Lifecycle
@@ -98,16 +98,16 @@ The Linux operating system manages thread states using the **scheduler** to deci
 
 ## 5.4. Comparison Between Process and Thread
 
-### 5.4.1. Example
+### 5.4.1. Process vs Thread Examples
+
 Suppose we have a **network server** that needs to handle multiple client connections simultaneously. Below are two implementation approaches:
 
-#### **Method 1: Using Processes**
+#### Method 1: Using Processes
 - When a client connects, the server calls `fork()` to create a new process.
 - Each process has its own separate memory space and handles clients independently.
 - If one process crashes, other processes remain unaffected.
 - However, creating a process consumes more resources due to memory and execution environment duplication.
 
-**C Example Using Process:**
 ```c
 #include <stdio.h>
 #include <stdlib.h>
@@ -131,13 +131,12 @@ int main() {
 }
 ```
 
-#### **Method 2: Using Threads**
+#### Method 2: Using Threads
 - When a client connects, the server creates a new thread to handle it within the same process.
 - Threads share common memory, making client communication easier.
 - If one thread crashes, it may affect the entire process.
 - Creating threads is faster and consumes fewer resources compared to processes.
 
-**C Example Using Thread:**
 ```c
 #include <stdio.h>
 #include <pthread.h>
@@ -179,13 +178,12 @@ Each thread in a process has a **Thread ID (TID)** for identification. Key chara
 - **PID** is an integer, but **TID** may be a structure depending on the system.
 - **PID** is easy to print, whereas **TID** requires specific functions to retrieve its value.
 
-#### **5.4.3.1. Retrieving and Comparing Thread ID in POSIX Threads (pthreads)**
+#### 5.4.3.1. Retrieving and Comparing Thread ID in POSIX Threads (pthreads)
 In pthreads, Thread ID is represented using `pthread_t`. Direct comparison is not allowed; instead, specific functions are used:
 
 - **pthread_self()**: Returns the Thread ID of the calling thread.
 - **pthread_equal(thread1, thread2)**: Compares two Thread IDs.
 
-#### **5.4.3.2. Detailed Example Using pthread_self() and pthread_equal()**
 ```c
 #include <stdio.h>
 #include <pthread.h>
@@ -224,7 +222,7 @@ int main() {
 | **Fault isolation** | ✅ (Process crash does not affect others) | ❌ (Thread crash may impact the whole process) |
 | **Fast creation, low resource usage** | ❌ | ✅ |
 
-----
+---
 
 ## 5.5. Working with Threads in Linux
 
@@ -234,7 +232,7 @@ A program starts execution as a **single-threaded** process, meaning it has only
 Every process has at least one thread, which is called the **main thread**, responsible for executing the `main()` function.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d8124904-927e-4461-96ea-ed8ff9e2a248" width="400">
+  <img src="https://github.com/user-attachments/assets/d8124904-927e-4461-96ea-ed8ff9e2a248" width="70%" alt="Thread Creation">
 </p>
 
 To create a new thread in Linux, use the `pthread_create()` function:
@@ -300,8 +298,6 @@ int main() {
 In this example:
 - The `thread_func()` prints a message and then calls `pthread_exit(NULL)` to terminate.
 - The `pthread_join()` function ensures that the main thread waits for the created thread to finish execution before exiting the program.
-
-Using `pthread_exit()` allows threads to return values and ensures proper cleanup of thread resources.
 
 --- 
 
@@ -378,7 +374,7 @@ int main() {
 ```c
 int pthread_join(pthread_t thread, void **retval);
 ```
-**This function waits for a specific thread to complete and retrieves its return value, preventing zombie threads.
+This function waits for a specific thread to complete and retrieves its return value, preventing zombie threads.
 
 #### Example:
 ```c
@@ -431,7 +427,6 @@ int main() {
     return 0;
 }
 ```
---- 
 
 ## 5.7. Thread Synchronization
 ### 5.7.1. Introduction to Thread Synchronization
@@ -479,44 +474,10 @@ Nonatomic operations allow multiple threads to access a shared resource simultan
     }
     ```
     **Issue:**
-    + Since counter++ is not protected, both threads might read the same value, increment it, and write it back, leading to lost updates (data loss).
-    + The expected result is 2000000, but the actual result may be lower.
+    - Since counter++ is not protected, both threads might read the same value, increment it, and write it back, leading to lost updates (data loss).
+    - The expected result is 2000000, but the actual result may be lower.
 
 - **Data corruption:** If one thread writes data while another reads it at the same time, the data may become corrupt or inconsistent.
-    ```c
-    #include <stdio.h>
-    #include <pthread.h>
-
-    char message[50] = "Hello, World!";
-
-    void* writer(void* arg) {
-        for (int i = 0; i < 10; i++) {
-            sprintf(message, "Thread %d writing", i);
-        }
-        return NULL;
-    }
-
-    void* reader(void* arg) {
-        for (int i = 0; i < 10; i++) {
-            printf("Reader reads: %s\n", message);
-        }
-        return NULL;
-    }
-
-    int main() {
-        pthread_t t1, t2;
-        pthread_create(&t1, NULL, writer, NULL);
-        pthread_create(&t2, NULL, reader, NULL);
-        
-        pthread_join(t1, NULL);
-        pthread_join(t2, NULL);
-        
-        return 0;
-    }
-    ```
-    **Issue:**
-    + Thread 1 (writer) may modify message while Thread 2 (reader) is reading it.
-    + The output may be truncated, inconsistent, or incorrect because the string is modified mid-read.
 
 Most operations in C/C++ are nonatomic by default unless explicitly synchronized.
 
@@ -719,38 +680,6 @@ int main() {
     +  Always lock mutexes in a fixed order (e.g., always lock mutexA before mutexB).
     +  Avoid holding multiple locks at the same time when possible.
     +  Use timeouts with pthread_mutex_timedlock() to detect deadlocks.
-
-3. **Mutex Not Released (Forgotten Unlock)**
-A thread locks a mutex but fails to unlock it, causing all other threads waiting for that mutex to be blocked forever.
-```c
-#include <stdio.h>
-#include <pthread.h>
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-void* thread_func(void* arg) {
-    pthread_mutex_lock(&mutex);
-    printf("Thread acquired the lock\n");
-
-    // Forgot to unlock the mutex before returning
-    return NULL;
-}
-
-int main() {
-    pthread_t thread1, thread2;
-    pthread_create(&thread1, NULL, thread_func, NULL);
-    pthread_create(&thread2, NULL, thread_func, NULL);
-
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
-    return 0;
-}
-```
-- **Issue:** If thread_func returns without unlocking mutex, other threads waiting for it will be blocked forever.
-- **Solution:**
-    + Always unlock a mutex after using it (pthread_mutex_unlock(&mutex)).
-    + Use RAII (Resource Acquisition Is Initialization) in C++ to automatically release locks (std::lock_guard<std::mutex>).
-    + Add error handling to check whether the mutex was unlocked correctly.
 
 ##### To avoid deadlocks:
 - Always unlock mutexes in the reverse order they were locked

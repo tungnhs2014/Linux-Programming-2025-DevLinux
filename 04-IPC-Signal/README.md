@@ -1,4 +1,4 @@
-# IPC Signals
+# 4.IPC Signals
 
 ## 4.1. Introduction and Signal Fundamentals
 Signals are one of the oldest inter-process communication (IPC) mechanisms in Unix/Linux systems. Essentially, a signal is a software interrupt used to handle asynchronous events.
@@ -10,14 +10,19 @@ Signals are one of the oldest inter-process communication (IPC) mechanisms in Un
 - Suitable for simple event notifications
 
 ### 4.1.2. Signal Origins:
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1bd2b086-3763-4688-b4cf-8544425a3e00" width="70%" alt="Signal Origins">
+</p>
+
+Signals come from four main sources:
+
 1. **From hardware**: When hardware errors occur (e.g., segmentation fault)
 2. **From users**: When users press key combinations (e.g., Ctrl+C)
 3. **From kernel**: When system events occur (e.g., child process termination)
 4. **From other processes**: When a process sends a signal to another process
 
 ### 4.1.3. Signal Lifecycle
-
-![Signal Lifecycle](https://github.com/user-attachments/assets/1bd2b086-3763-4688-b4cf-8544425a3e00)
 
 **Each signal goes through three main phases:**
 1. **Generation**: Signal is created due to some event
@@ -50,11 +55,76 @@ Signals are one of the oldest inter-process communication (IPC) mechanisms in Un
 - **SIGSTOP (19)**: Cannot be ignored or caught, always stops the process
 - **SIGUSR1 (10) and SIGUSR2 (12)**: Reserved for applications to define their own usage
 
---- 
+---
 
 ## 4.2. Signal Handling and Implementation
 ### 4.2.1 Signal Handler
 A signal handler is a function called when a specific signal is sent to a process. To register a signal handler, we use the `signal()` or `sigaction()` system call.
+
+The following example shows how to handle multiple signals:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+
+// Flag to control program exit
+volatile sig_atomic_t keep_running = 1;
+
+void signal_handler(int signo) {
+    switch (signo) {
+        case SIGINT:
+            printf("\nReceived SIGINT (Ctrl+C). Press again to exit.\n");
+            // Change handler to default action on next SIGINT
+            signal(SIGINT, SIG_DFL);
+            break;
+            
+        case SIGTERM:
+            printf("\nReceived SIGTERM. Cleaning up and exiting.\n");
+            keep_running = 0;
+            break;
+            
+        case SIGUSR1:
+            printf("\nReceived SIGUSR1. Performing custom action.\n");
+            break;
+    }
+}
+
+int main() {
+    // Register signal handlers
+    if (signal(SIGINT, signal_handler) == SIG_ERR) {
+        perror("Failed to set SIGINT handler");
+        return 1;
+    }
+    
+    if (signal(SIGTERM, signal_handler) == SIG_ERR) {
+        perror("Failed to set SIGTERM handler");
+        return 1;
+    }
+    
+    if (signal(SIGUSR1, signal_handler) == SIG_ERR) {
+        perror("Failed to set SIGUSR1 handler");
+        return 1;
+    }
+    
+    // Print process ID so we can send signals
+    printf("Process ID: %d\n", getpid());
+    printf("Try:\n");
+    printf("  - Press Ctrl+C\n");
+    printf("  - Run 'kill %d' in another terminal\n", getpid());
+    printf("  - Run 'kill -USR1 %d' in another terminal\n", getpid());
+    
+    // Main loop
+    while (keep_running) {
+        printf("Running...\n");
+        sleep(2);
+    }
+    
+    printf("Program exited normally\n");
+    return 0;
+}
+```
 
 ### 4.2.2. Registering a Signal Handler with signal()
 
@@ -110,6 +180,83 @@ struct sigaction {
 };
 ```
 
+Example using sigaction() with siginfo:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+#include <string.h>
+
+volatile sig_atomic_t sigusr1_count = 0;
+
+// Extended signal handler with siginfo
+void handler(int signo, siginfo_t *info, void *context) {
+    // Safe to use write() in signal handlers
+    const char *msg;
+    
+    switch (signo) {
+        case SIGUSR1:
+            sigusr1_count++;
+            msg = "Received SIGUSR1\n";
+            write(STDOUT_FILENO, msg, strlen(msg));
+            
+            // Get info about signal sender
+            if (info != NULL) {
+                char buffer[100];
+                int len = snprintf(buffer, sizeof(buffer), 
+                                 "Signal sent by process %d\n", info->si_pid);
+                write(STDOUT_FILENO, buffer, len);
+            }
+            break;
+            
+        case SIGINT:
+            msg = "\nReceived SIGINT. Exiting.\n";
+            write(STDOUT_FILENO, msg, strlen(msg));
+            exit(0);
+            break;
+    }
+}
+
+int main() {
+    struct sigaction sa;
+    
+    // Initialize sigaction struct
+    memset(&sa, 0, sizeof(sa));
+    
+    // We want to use the extended siginfo handler
+    sa.sa_sigaction = handler;
+    sa.sa_flags = SA_SIGINFO;
+    
+    // Block all other signals during handler
+    sigfillset(&sa.sa_mask);
+    
+    // Register handlers
+    if (sigaction(SIGUSR1, &sa, NULL) == -1) {
+        perror("Failed to set SIGUSR1 handler");
+        return 1;
+    }
+    
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        perror("Failed to set SIGINT handler");
+        return 1;
+    }
+    
+    printf("Process ID: %d\n", getpid());
+    printf("Send SIGUSR1 with: kill -USR1 %d\n", getpid());
+    printf("Press Ctrl+C to exit\n");
+    
+    // Main loop
+    while (1) {
+        printf("SIGUSR1 count: %d\n", sigusr1_count);
+        sleep(2);
+    }
+    
+    return 0;
+}
+```
+
 ### 4.2.5. Notes when writing Signal Handlers:
 - Signal handlers should be short and simple
 - Avoid using non-async-signal-safe functions
@@ -140,6 +287,32 @@ Special values for `pid`:
 - `pid == -1`: Send signal to all processes that the sender has permission to
 - `pid < -1`: Send signal to all processes in the group with ID = |pid|
 
+Example of sending SIGUSR1 to a process:
+
+```c
+#include <stdio.h>
+#include <signal.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <PID>\n", argv[0]);
+        return 1;
+    }
+    
+    pid_t pid = atoi(argv[1]);
+    
+    // Send SIGUSR1 to the specified process
+    if (kill(pid, SIGUSR1) == -1) {
+        perror("Failed to send signal");
+        return 1;
+    }
+    
+    printf("Signal SIGUSR1 sent to process %d\n", pid);
+    return 0;
+}
+```
+
 #### Using the kill Command in Terminal
 
 ```bash
@@ -165,6 +338,77 @@ kill(getpid(), SIGUSR1);
 | Ctrl+C   | SIGINT  | Interrupt foreground process     |
 | Ctrl+Z   | SIGTSTP | Suspend foreground process       |
 | Ctrl+\   | SIGQUIT | Terminate and create core dump   |
+
+#### Example: Communication Between Processes Using Signals
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+
+void parent_handler(int signo) {
+    if (signo == SIGUSR1)
+        printf("Parent: Received SIGUSR1 from child\n");
+}
+
+void child_handler(int signo) {
+    if (signo == SIGUSR2)
+        printf("Child: Received SIGUSR2 from parent\n");
+}
+
+int main() {
+    pid_t pid;
+    
+    // Set up signal handlers before fork
+    signal(SIGUSR1, parent_handler);
+    signal(SIGUSR2, child_handler);
+    
+    printf("Starting parent process (PID: %d)\n", getpid());
+    
+    // Create child process
+    pid = fork();
+    
+    if (pid < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+    
+    if (pid == 0) {
+        // Child process
+        printf("Child process started (PID: %d)\n", getpid());
+        
+        // Send signal to parent
+        printf("Child: Sending SIGUSR1 to parent\n");
+        kill(getppid(), SIGUSR1);
+        
+        // Wait for signal from parent
+        printf("Child: Waiting for signal...\n");
+        sleep(2);
+        
+        printf("Child: Exiting\n");
+        exit(0);
+    } else {
+        // Parent process
+        printf("Parent: Child created with PID %d\n", pid);
+        
+        // Wait a moment for child to get ready
+        sleep(1);
+        
+        // Send signal to child
+        printf("Parent: Sending SIGUSR2 to child\n");
+        kill(pid, SIGUSR2);
+        
+        // Wait for child to exit
+        printf("Parent: Waiting for child to exit...\n");
+        wait(NULL);
+        
+        printf("Parent: Child has exited. Parent exiting too.\n");
+    }
+    
+    return 0;
+}
+```
 
 ### 4.3.2. Blocking and Unblocking Signals
 
@@ -236,11 +480,7 @@ int sigpending(sigset_t *set);
 
 This function stores the set of pending signals in `set`.
 
----
-
-## 4.4. Practical Examples
-
-### 4.4.1.Example 1: Simple Signal Handling
+#### Example: Protecting Critical Sections
 
 ```c
 #include <stdio.h>
@@ -248,174 +488,66 @@ This function stores the set of pending signals in `set`.
 #include <signal.h>
 #include <unistd.h>
 
-void handle_signal(int signo) {
-    if (signo == SIGINT)
-        printf("\nReceived SIGINT. Press Ctrl+C again to exit.\n");
-    else if (signo == SIGTERM)
-        printf("\nReceived SIGTERM. Cleaning up and exiting.\n");
-    else
-        printf("\nReceived signal: %d\n", signo);
-}
-
-int main(void) {
-    // Register signal handlers
-    if (signal(SIGINT, handle_signal) == SIG_ERR)
-        printf("Cannot handle SIGINT\n");
-    
-    if (signal(SIGTERM, handle_signal) == SIG_ERR)
-        printf("Cannot handle SIGTERM\n");
-    
-    // Infinite loop
-    printf("Process PID: %d\n", getpid());
-    printf("Press Ctrl+C or use 'kill -TERM %d' to test\n", getpid());
-    
-    while(1) {
-        printf("Process running...\n");
-        sleep(3);
-    }
-    
-    return 0;
-}
-```
-
-### 4.4.2. Example 2: Using sigaction() Instead of signal()
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
-#include <string.h>
-
-void handle_signal(int signo) {
-    printf("\nCaught signal %d\n", signo);
-}
-
-int main(void) {
-    struct sigaction sa;
-    
-    // Clear sigaction structure
-    memset(&sa, 0, sizeof(sa));
-    
-    // Set handler
-    sa.sa_handler = handle_signal;
-    
-    // Block other signals during handling
-    sigfillset(&sa.sa_mask);
-    
-    // Set flags (e.g., SA_RESTART to automatically restart interrupted system calls)
-    sa.sa_flags = SA_RESTART;
-    
-    // Register handler for SIGINT
-    if (sigaction(SIGINT, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(EXIT_FAILURE);
-    }
-    
-    printf("Process PID: %d\n", getpid());
-    printf("Press Ctrl+C to test handler\n");
-    
-    // Infinite loop
-    while(1) {
-        printf("Process running...\n");
-        sleep(3);
-    }
-    
-    return 0;
-}
-```
-
-### 4.4.3. Example 3: Sending Signals to Another Process
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
-
-int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        printf("Usage: %s <pid> <signal_number>\n", argv[0]);
-        return 1;
-    }
-    
-    pid_t pid = atoi(argv[1]);
-    int signo = atoi(argv[2]);
-    
-    printf("Sending signal %d to process %d\n", signo, pid);
-    
-    if (kill(pid, signo) == -1) {
-        perror("kill");
-        return 1;
-    }
-    
-    printf("Signal sent successfully\n");
-    return 0;
-}
-```
-
-### 4.4.4. Example 4: Using Signal Masks to Protect Critical Sections
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
-
-void handle_sigint(int signo) {
-    printf("\nSIGINT has been caught!\n");
+void signal_handler(int signo) {
+    printf("\nSignal %d received\n", signo);
 }
 
 void critical_section(void) {
-    sigset_t new_mask, old_mask;
+    sigset_t block_set, old_set;
     
-    printf("Starting critical section\n");
+    // Create set with important signals to block
+    sigemptyset(&block_set);
+    sigaddset(&block_set, SIGINT);
+    sigaddset(&block_set, SIGTERM);
     
-    // Initialize new signal set and add SIGINT
-    sigemptyset(&new_mask);
-    sigaddset(&new_mask, SIGINT);
+    printf("Entering critical section\n");
     
-    // Block SIGINT and save old mask
-    if (sigprocmask(SIG_BLOCK, &new_mask, &old_mask) < 0) {
-        perror("sigprocmask");
-        exit(1);
+    // Block signals and save old mask
+    sigprocmask(SIG_BLOCK, &block_set, &old_set);
+    
+    printf("Signals blocked. Try Ctrl+C now...\n");
+    
+    // Simulate important work
+    for (int i = 5; i > 0; i--) {
+        printf("%d seconds remaining in critical section\n", i);
+        sleep(1);
     }
     
-    printf("SIGINT is blocked. Try pressing Ctrl+C...\n");
-    sleep(5);  // Simulate important work
-    
-    // Check if any signals are pending
+    // Check for pending signals
     sigset_t pending;
-    if (sigpending(&pending) < 0) {
-        perror("sigpending");
-        exit(1);
-    }
+    sigpending(&pending);
     
     if (sigismember(&pending, SIGINT))
-        printf("SIGINT is pending!\n");
+        printf("SIGINT is pending and will be delivered when unblocked\n");
+        
+    if (sigismember(&pending, SIGTERM))
+        printf("SIGTERM is pending and will be delivered when unblocked\n");
+    
+    printf("Leaving critical section, unblocking signals\n");
     
     // Restore original signal mask
-    if (sigprocmask(SIG_SETMASK, &old_mask, NULL) < 0) {
-        perror("sigprocmask");
-        exit(1);
-    }
+    sigprocmask(SIG_SETMASK, &old_set, NULL);
     
-    printf("SIGINT is unblocked. Critical section ended.\n");
+    printf("Signals unblocked\n");
 }
 
-int main(void) {
-    // Register handler for SIGINT
-    if (signal(SIGINT, handle_sigint) == SIG_ERR) {
-        perror("signal");
-        exit(1);
-    }
+int main() {
+    // Set up signal handlers
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = signal_handler;
+    sa.sa_flags = SA_RESTART;
     
-    printf("Press Enter to start critical section...");
-    getchar();
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
     
+    printf("Process ID: %d\n", getpid());
+    
+    // Run critical section
     critical_section();
     
-    printf("Process continues running. Press Ctrl+C to exit.\n");
+    printf("Main program continues. Press Ctrl+C to exit.\n");
+    
     while(1) {
         sleep(1);
     }
@@ -423,65 +555,3 @@ int main(void) {
     return 0;
 }
 ```
---- 
-
-## 4.5. Best Practices and Summary
-### 4.5.1.Best Practices
-1. **Use sigaction() Instead of signal()**
-   - `sigaction()` provides more control and consistent behavior
-   - `signal()` may have different behavior on different Unix systems
-
-2. **Keep Signal Handlers Simple**
-   - Signal handlers should execute quickly
-   - Avoid complex operations, system calls, or memory allocation
-   - Better to set a flag and return immediately, handling the main logic outside the handler
-
-3. **Be Careful with Signal Safety**
-   - Not all functions are safe to call from signal handlers
-   - Only use "async-signal-safe" functions in handlers
-   - Refer to system documentation for a list of safe functions
-
-4. **Block Signals in Critical Sections**
-   - Use `sigprocmask()` to temporarily block signals during critical operations
-   - Ensure signal masks are restored afterward
-
-5. **Handle Interrupted System Calls**
-   - Many system calls can be interrupted by signals
-   - Check for EINTR error code and restart system calls if needed
-   - Use the SA_RESTART flag in sigaction() for automatic restarting
-
-6. **Always Check Return Values**
-   - Signal-related functions can fail
-   - Always check return values and handle errors appropriately
-
-7. **Be Cautious with Race Conditions**
-   - Signals create asynchronous execution that can lead to race conditions
-   - Use appropriate synchronization mechanisms when accessing shared resources
-
-### 4.5.2. Summary
-Signals are an important mechanism in Linux system programming, allowing communication between processes and handling asynchronous events. Although simple, signals are powerful and flexible.
-
-#### Advantages of Signals:
-- Simple, lightweight mechanism
-- Widely supported on all Unix/Linux systems
-- Suitable for simple event notifications
-
-#### Limitations of Signals:
-- Cannot carry much data
-- Can be lost if the same type of signal occurs multiple times while pending
-- Requires careful attention to synchronization issues
-
-#### When to Use Signals:
-- Handling asynchronous events (like Ctrl+C)
-- Managing process lifecycle (parent-child)
-- Simple event notifications between processes
-- Handling timeouts and alarms
-
-#### When Not to Use Signals:
-- Transferring complex data between processes
-- Detailed synchronization between processes
-- High-frequency communication between processes
-
-For more complex communication, consider other IPC mechanisms such as pipes, message queues, shared memory, or sockets.
-
----
