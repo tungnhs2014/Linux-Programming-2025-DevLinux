@@ -34,10 +34,6 @@ Every process in Linux has:
 - Resource usage statistics
 - State information (running, sleeping, stopped, etc.)
 
-<p align="center">
-  <img width="70%" alt="Process States Diagram" src="https://user-images.githubusercontent.com/25842535/173225490-3cda92d1-5f8e-4321-a69e-1dbcdd8f3e1f.png">
-</p>
-
 ### 3.1.3. Relationship Between Programs and Processes
 
 Understanding the relationship between programs and processes is essential for effective system management:
@@ -114,10 +110,6 @@ These parameters provide access to all arguments passed to the program:
   - `argv[2]`: Second actual argument
   - ...
   - `argv[argc-1]`: Last argument
-
-<p align="center">
-  <img width="70%" alt="Command Line Arguments" src="https://user-images.githubusercontent.com/25842535/173225510-eecfb56a-0fec-4f90-99b3-e834d5c12cc1.png">
-</p>
 
 ### 3.2.3. Example: Processing Command-line Arguments
 
@@ -231,10 +223,6 @@ When processing command-line arguments, several common patterns are used:
 ### 3.3.1. Memory Segments Overview
 
 Each process in Linux has its own virtual address space, divided into multiple segments that serve different purposes:
-
-<p align="center">
-  <img width="70%" alt="Process Memory Layout" src="https://user-images.githubusercontent.com/25842535/173225530-3f6ba856-1c80-41d9-ae1d-a838bf34cfef.png">
-</p>
 
 #### Text/Code Segment
 
@@ -593,10 +581,6 @@ While `fork()` creates a new process that is a copy of the parent, the exec func
    - Memory contents are replaced with the new program
    - On success, exec does not return to the calling program
 
-<p align="center">
-  <img width="70%" alt="Exec Process Replacement" src="https://user-images.githubusercontent.com/25842535/173225560-3c16a7bb-4c80-4e39-bf43-127fcfa9f0a.png">
-</p>
-
 #### The exec Family of Functions
 
 There are several variants of exec, each with different features:
@@ -951,10 +935,6 @@ An orphan process occurs when a parent process terminates before its child proce
 - **Behavior**: The orphaned process is "adopted" by the init process (PID 1)
 - **Impact**: Minimal; init automatically reaps terminated orphans
 
-<p align="center">
-  <img width="70%" alt="Orphan Process Diagram" src="https://user-images.githubusercontent.com/25842535/173225580-9e8a7b54-17f1-48a9-b7e2-80a05ec82fa.png">
-</p>
-
 #### Example: Creating an Orphan Process
 
 ```c
@@ -1076,10 +1056,6 @@ A zombie process (also called a defunct process) is a process that has completed
 - **Definition**: A terminated process whose exit status has not yet been collected by its parent
 - **Behavior**: Appears as `<defunct>` in process listings with state 'Z'
 - **Impact**: Consumes process table entries; excessive zombies can prevent creation of new processes
-
-<p align="center">
-  <img width="70%" alt="Zombie Process Diagram" src="https://user-images.githubusercontent.com/25842535/173225600-e6a7b45f-d6c7-4e38-8dda-92d121ef37ab.png">
-</p>
 
 #### Example: Creating a Zombie Process
 

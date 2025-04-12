@@ -370,10 +370,6 @@ The typical workflow for a system call:
 4. CPU switches back to user mode
 5. Program continues execution with the result
 
-<p align="center">
-  <img width="70%" alt="System Call Process" src="https://www.tutorialspoint.com/operating_system/images/system_call.jpg">
-</p>
-
 ### 2.2.2. File Management System Calls
 
 These system calls handle file operations:
@@ -933,10 +929,6 @@ Linux implements two primary types of locks:
 
 1. **Advisory locks**: Processes must voluntarily check and respect locks
 2. **Mandatory locks**: Enforced by the kernel, though rarely used in Linux
-
-<p align="center">
-  <img width="70%" alt="File Locking Concept" src="https://user-images.githubusercontent.com/25842535/173225445-9ccdb2d1-fc59-41a4-9e54-57e8d0c2f8a.png">
-</p>
 
 ### 2.4.2. How File Locking Works
 
