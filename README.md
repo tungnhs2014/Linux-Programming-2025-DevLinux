@@ -5,13 +5,13 @@ This repository serves as a learning resource and reference for **Linux programm
 
 ---
 
-## 🎯 What you will learn?
+## 🎯 What You Will Learn
+
 ### 1. General Knowledge
 #### 📄 **1.1. Introduction to Makefile**
 #### ⚙️ **1.2. The Process of Compiling a C Program**
 #### 📚 **1.3. Static and Shared Libraries in Linux**
 #### 📚 **1.4. Additional Resources**
-
 
 ### 2. Linux File System
 #### 🗂️ **2.1. Introduction to the Linux File System**
@@ -19,7 +19,6 @@ This repository serves as a learning resource and reference for **Linux programm
 #### 📂 **2.3. File Management Internals**
 #### 🔒 **2.4. File Locking in Linux**
 #### 🔒 **2.5. Advanced File System Concepts**
-
 
 ### 3. Linux Process
 #### 🚀 **3.1. Fundamentals of Programs and Processes**
@@ -39,7 +38,7 @@ This repository serves as a learning resource and reference for **Linux programm
 #### 🔄 **5.2. Concurrency, Parallelism, and Context Switching**
 #### 🧐 **5.3. Thread States and Lifecycle**
 #### ⚖️ **5.4. Comparison Between Process and Thread**
-#### 🛠  **5.5. Working with Threads in Linux**
+#### 🛠 **5.5. Working with Threads in Linux**
 #### 🔧 **5.6. Managing Threads**
 #### 🔒 **5.7. Thread Synchronization**
 
@@ -75,16 +74,56 @@ This repository serves as a learning resource and reference for **Linux programm
 #### 🖥️ **11.3. System V Semaphores**
 #### 🖧 **11.4. POSIX Semaphores**
 #### ⚖️ **11.5. System V vs. POSIX Semaphores**
+
 ---
 
 ## 🚀 Get Started in 3 Steps  
-1️⃣ Clone the repo:  
+
+### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/tungnhs2014/Linux-Programming-2025-DevLinux.git
 cd Linux-Programming-2025-DevLinux
 ```
-2️⃣ Read, run the examples, and complete the exercises!
 
-3️⃣ Become a skilled Linux system programming!
+### 2️⃣ Prepare Your Environment
+```bash
+sudo apt-get update
+sudo apt-get install build-essential gdb valgrind
+```
+
+### 3️⃣ Explore and Practice
+* Follow the examples in each section
+* Complete the exercises
+* Build the mini-projects to apply your knowledge
 
 ---
+
+## 📈 Learning Path
+
+**Beginner**: Sections 1-3 - Linux basics and file operations
+
+**Intermediate**: Sections 4-7 - Process, signals, threads, and sockets
+
+**Advanced**: Sections 8-11 - Advanced IPC mechanisms
+
+---
+
+## 📊 Topic Complexity Guide
+
+| Topic | Complexity | Prerequisites |
+|-------|------------|---------------|
+| File System | ⭐⭐ | C basics |
+| Processes | ⭐⭐⭐ | File system |
+| Signals | ⭐⭐ | Processes |
+| Threads | ⭐⭐⭐ | Processes |
+| Sockets | ⭐⭐⭐⭐ | Basic networking |
+| Pipes & FIFOs | ⭐⭐ | Processes |
+| Message Queues | ⭐⭐⭐ | IPC concepts |
+| Shared Memory | ⭐⭐⭐ | Memory management |
+| Semaphores | ⭐⭐⭐ | Concurrency basics |
+
+---
+
+<p align="center">
+  <strong>Happy Linux Programming!</strong>
+</p>

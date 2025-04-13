@@ -1,4 +1,4 @@
-# IPC - Semaphores
+# 11. IPC - Semaphores
 
 ## 11.1. Introduction
 
@@ -973,16 +973,3 @@ int main() {
 | **Limits**        | System-wide limits on sets & semaphores | Limits on named semaphores; unnamed limited by memory |
 
 **Recommendation:** For new applications, **POSIX semaphores** (especially named ones for unrelated processes, or unnamed ones in shared memory for related processes) are generally simpler and preferred unless you specifically need the complex atomic operations or `SEM_UNDO` feature of System V's `semop`.
-
----
-
-## 11.6. Important Considerations
-
-*   **Atomicity:** Ensure you understand which operations are atomic. Semaphore operations themselves (`sem_wait`, `sem_post`, `semop`) are atomic, but the code *between* acquiring and releasing a semaphore is not inherently atomic with respect to other processes unless protected by the semaphore.
-*   **Initialization:** Correct initialization is crucial. Ensure only one process initializes a semaphore (using `O_EXCL` flags or other coordination). Set the correct initial value (e.g., 1 for mutex, N for resource pool). Unnamed semaphores in shared memory must be initialized *after* the memory is mapped.
-*   **Cleanup:** Failure to clean up persistent semaphores (System V sets via `semctl(IPC_RMID)`, POSIX named via `sem_unlink()`) leads to resource leaks in the kernel. Unnamed semaphores need `sem_destroy()`. `SEM_UNDO` is vital for System V robustness against crashes.
-*   **Error Handling:** Always check the return values of semaphore functions and handle errors appropriately (e.g., check `errno`).
-*   **Deadlock:** Be cautious when using multiple semaphores. Acquiring them in different orders in different processes can lead to deadlock (e.g., Process A waits on Sem1 then Sem2, Process B waits on Sem2 then Sem1). Always acquire multiple locks in a consistent order.
-*   **Linking:** Remember to link with `-lpthread` when using POSIX semaphores, and potentially `-lrt` for named POSIX semaphores or POSIX shared memory functions (`shm_open`, `shm_unlink`). System V functions usually don't require special linking.
-
----

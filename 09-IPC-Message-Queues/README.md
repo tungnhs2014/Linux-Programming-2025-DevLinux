@@ -1,6 +1,6 @@
-# IPC-Message Queues
+# 9. IPC-Message Queues
 
-### 9.1. Introduction to IPC (Inter-Process Communication)
+## 9.1. Introduction to IPC (Inter-Process Communication)
 IPC (Inter-Process Communication) refers to mechanisms that allow processes to communicate with each other and synchronize their actions. IPC can be categorized into the following main types:
 
 ### 9.1.1. Communication Mechanisms
@@ -41,7 +41,7 @@ Synchronization mechanisms coordinate process execution:
   - **Conditional variable (threads)**: Allow threads to wait for specific conditions
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/3c5fb086-13c9-4faa-8a4c-cade552614a9" alt="Chat App Screenshot" width="500"/>
+  <img src="https://github.com/user-attachments/assets/3c5fb086-13c9-4faa-8a4c-cade552614a9" alt="Chat App Screenshot" width="70%"/>
 </p>
 
 ### 9.1.3. What are Message Queues?
@@ -49,20 +49,38 @@ Synchronization mechanisms coordinate process execution:
 - A Message Queue is a linked list of messages maintained by the kernel.
 - All processes can exchange data by accessing the same queue.
 - Each message is tagged with additional information about its type (message type).
+- Message queues provide a structured way of passing data between processes, unlike the raw byte streams of pipes.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c1a13822-d472-4615-9fe7-f45a03c61649" alt="Message Queue Structure" width="500"/>
+  <img src="https://github.com/user-attachments/assets/c1a13822-d472-4615-9fe7-f45a03c61649" alt="Message Queue Structure" width="70%"/>
 </p>
 
 - Processes can retrieve appropriate messages based on the message type.
+- Messages are queued in FIFO order within the same priority or message type.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/8fd1fa6c-a01b-4cec-b6f5-8e3bf668eb18" alt="IPC Example" width="500"/>
+  <img src="https://github.com/user-attachments/assets/8fd1fa6c-a01b-4cec-b6f5-8e3bf668eb18" alt="IPC Example" width="70%"/>
 </p>
+
+#### 9.1.3.1. Advantages of Message Queues
+
+- **Asynchronous Communication**: Sender and receiver don't need to interact at the same time.
+- **Message-Oriented**: Data is transmitted in discrete messages rather than continuous streams.
+- **Message Types**: Messages can be categorized and selectively received.
+- **System Managed Storage**: The kernel handles message buffering and queuing.
+- **Multiple Readers/Writers**: Multiple processes can send to or receive from the same queue.
+
+#### 9.1.3.2. Limitations of Message Queues
+
+- **Size Limitations**: Maximum message size and queue length are system-dependent.
+- **Persistent Resources**: Message queues persist until explicitly removed, potentially causing resource leaks.
+- **No Network Support**: Traditional message queues are limited to a single system (unlike sockets).
 
 --- 
 
 ## 9.2. System V Message Queues
+System V message queues are the traditional message queue implementation in Unix systems.
+
 ### 9.2.1. Implementation Steps
 1. Create a key
 2. Create a message queue or open an existing one
@@ -80,6 +98,7 @@ key_t ftok(const char *pathname, int proj);
 - Returns an integer key on success, or -1 on error.
 - `pathname`: Must be an existing, accessible file
 - `proj`: A project identifier value (usually a single character)
+- The function combines the file's inode number with the provided project ID to create a unique key.
 
 ### 9.2.3. Creating a Message Queue
 - To create a new message queue or open an existing one, use `msgget()`.
@@ -96,6 +115,7 @@ int msgget(key_t key, int msgflg);
     + `IPC_EXCL`: When used with IPC_CREAT, fail if queue already exists
     + Access permission bits (e.g., 0666)
 - Returns a message queue identifier on success, or -1 on error.
+- The message queue identifier is used in subsequent operations.
 
 ### 9.2.4. Writing to a Message Queue
 - To write data (send/append) to a message queue, use `msgsnd()`.
@@ -119,6 +139,7 @@ int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
     + `IPC_NOWAIT`: Return immediately if the queue is full
     + `0`: Block until space is available
 - Returns 0 on success, or -1 on error.
+- The message is appended to the end of the queue.
 
 ### 9.2.5. Reading from a Message Queue
 - To read data from a message queue, use `msgrcv()`.
@@ -140,8 +161,9 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
     + `IPC_NOWAIT`: Return immediately if no message of the requested type is available
     + `MSG_NOERROR`: Truncate message if it's larger than msgsz
 - Returns the number of bytes copied into mtext on success, or -1 on error.
+- The message is removed from the queue after being read.
 
-### 9.2.6. Deleting a Message Queue
+### 9.2.6. Controlling and Deleting a Message Queue
 - To control operations on a message queue, use `msgctl()`.
 ```c
 #include <sys/types.h>
@@ -157,6 +179,20 @@ int msgctl(int msqid, int cmd, struct msqid_ds *buf);
     + `IPC_SET`: Set queue attributes according to the structure pointed to by buf
   - `buf`: Pointer to a msqid_ds structure (can be NULL when using IPC_RMID)
 - Returns 0 on success, or -1 on error.
+- The `msqid_ds` structure contains information about the message queue:
+  ```c
+  struct msqid_ds {
+      struct ipc_perm msg_perm;   /* Ownership and permissions */
+      time_t msg_stime;           /* Time of last msgsnd() */
+      time_t msg_rtime;           /* Time of last msgrcv() */
+      time_t msg_ctime;           /* Time of last change */
+      unsigned long msg_cbytes;   /* Current number of bytes in queue */
+      msgqnum_t msg_qnum;         /* Current number of messages in queue */
+      msglen_t msg_qbytes;        /* Maximum number of bytes allowed in queue */
+      pid_t msg_lspid;            /* PID of last msgsnd() */
+      pid_t msg_lrpid;            /* PID of last msgrcv() */
+  };
+  ```
 
 ### 9.2.7. Example: System V Message Queue
 ```c
@@ -164,9 +200,11 @@ int msgctl(int msqid, int cmd, struct msqid_ds *buf);
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <errno.h>
 
 #define MAX_SIZE 512
 
@@ -183,19 +221,36 @@ int main() {
     
     // Create a key
     key = ftok("message_queue_file", 65);
+    if (key == -1) {
+        perror("ftok failed");
+        exit(EXIT_FAILURE);
+    }
     
     // Create or open a message queue
     msgid = msgget(key, 0666 | IPC_CREAT);
+    if (msgid == -1) {
+        perror("msgget failed");
+        exit(EXIT_FAILURE);
+    }
     
     // Set message type and text
     message.msg_type = 1;
     printf("Enter message to send: ");
-    scanf("%[^\n]", message.msg_text);
+    if (fgets(message.msg_text, MAX_SIZE, stdin) == NULL) {
+        perror("fgets failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Remove trailing newline
+    size_t len = strlen(message.msg_text);
+    if (len > 0 && message.msg_text[len-1] == '\n') {
+        message.msg_text[len-1] = '\0';
+    }
     
     // Send message
-    if (msgsnd(msgid, &message, sizeof(message.msg_text), 0) == -1) {
+    if (msgsnd(msgid, &message, strlen(message.msg_text) + 1, 0) == -1) {
         perror("msgsnd failed");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     
     printf("Message sent: %s\n", message.msg_text);
@@ -208,9 +263,11 @@ int main() {
 /* Receiver program */
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <errno.h>
 
 #define MAX_SIZE 512
 
@@ -227,21 +284,44 @@ int main() {
     
     // Create a key (same as sender)
     key = ftok("message_queue_file", 65);
+    if (key == -1) {
+        perror("ftok failed");
+        exit(EXIT_FAILURE);
+    }
     
     // Open the message queue
     msgid = msgget(key, 0666 | IPC_CREAT);
+    if (msgid == -1) {
+        perror("msgget failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Get queue information
+    struct msqid_ds qinfo;
+    if (msgctl(msgid, IPC_STAT, &qinfo) == -1) {
+        perror("msgctl failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("Current number of messages in queue: %lu\n", qinfo.msg_qnum);
     
     // Receive message
-    if (msgrcv(msgid, &message, sizeof(message.msg_text), 1, 0) == -1) {
+    ssize_t recv_size = msgrcv(msgid, &message, MAX_SIZE, 1, 0);
+    if (recv_size == -1) {
         perror("msgrcv failed");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     
     // Display message
     printf("Message received: %s\n", message.msg_text);
     
     // Remove message queue
-    msgctl(msgid, IPC_RMID, NULL);
+    if (msgctl(msgid, IPC_RMID, NULL) == -1) {
+        perror("msgctl failed to remove queue");
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("Message queue removed successfully\n");
     
     return 0;
 }
@@ -249,6 +329,8 @@ int main() {
 ---
 
 ## 9.3. POSIX Message Queues
+POSIX message queues provide a more modern and consistent API compared to System V message queues.
+
 ### 9.3.1. Implementation Steps
 1. Create a message queue or open an existing one
 2. Write data to the message queue
@@ -302,6 +384,7 @@ int mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned int msg_p
   - `msg_len`: Length of the message in bytes (must not exceed the queue's mq_msgsize)
   - `msg_prio`: Message priority (unsigned integer, higher value = higher priority)
 - Returns 0 on success, or -1 on error.
+- Messages with the same priority are queued in FIFO order.
 
 ### 9.3.4. Receiving a Message
 - To read data from a message queue, use `mq_receive()`.
@@ -317,6 +400,7 @@ ssize_t mq_receive(mqd_t mqdes, char *msg_ptr, size_t msg_len, unsigned int *msg
   - `msg_prio`: Pointer to store the priority of the received message (can be NULL)
 - The `mq_receive()` function removes the highest priority message from the queue and returns it in the buffer pointed to by `msg_ptr`.
 - Returns the number of bytes in the received message on success, or -1 on error.
+- Unlike System V message queues, POSIX queues always return the highest priority message first.
 
 ### 9.3.5. Closing a Message Queue
 - To close a message queue when it's no longer needed, use `mq_close()`.
@@ -329,6 +413,7 @@ int mq_close(mqd_t mqdes);
   - `mqdes`: Message queue descriptor returned by `mq_open()`
 - Returns 0 on success, or -1 on error.
 - Note: Closing a message queue doesn't remove it from the system; it just releases the file descriptor.
+- Similar to closing a file, this doesn't affect other processes that have the queue open.
 
 ### 9.3.6. Removing a Message Queue
 - To delete a message queue from the system, use `mq_unlink()`.
@@ -341,6 +426,7 @@ int mq_unlink(const char *name);
   - `name`: Name of the message queue to remove (same format as used with `mq_open()`)
 - Returns 0 on success, or -1 on error.
 - Note: The queue is not actually removed until all processes that have it open close their descriptors.
+- This behavior is similar to that of `unlink()` for files.
 
 ### 9.3.7. Example: POSIX Message Queue
 ```c
@@ -352,6 +438,7 @@ int mq_unlink(const char *name);
 #include <sys/stat.h>
 #include <mqueue.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define QUEUE_NAME "/test_queue"
 #define MAX_SIZE 1024
@@ -373,13 +460,16 @@ int main() {
     // Create the message queue
     mq = mq_open(QUEUE_NAME, O_CREAT | O_WRONLY, QUEUE_PERMISSIONS, &attr);
     if (mq == (mqd_t)-1) {
-        perror("mq_open");
-        exit(1);
+        perror("mq_open failed");
+        exit(EXIT_FAILURE);
     }
     
     do {
         printf("Enter message to send (or empty to quit): ");
-        fgets(buffer, MAX_SIZE, stdin);
+        if (fgets(buffer, MAX_SIZE, stdin) == NULL) {
+            perror("fgets failed");
+            break;
+        }
         
         // Remove trailing newline
         size_t len = strlen(buffer);
@@ -391,15 +481,20 @@ int main() {
         } else {
             // Send message with priority 1
             if (mq_send(mq, buffer, strlen(buffer) + 1, 1) == -1) {
-                perror("mq_send");
-                exit(2);
+                perror("mq_send failed");
+                break;
             }
+            printf("Message sent successfully\n");
         }
     } while (!must_stop);
     
     // Close the queue
-    mq_close(mq);
+    if (mq_close(mq) == -1) {
+        perror("mq_close failed");
+        exit(EXIT_FAILURE);
+    }
     
+    printf("Queue closed successfully\n");
     return 0;
 }
 ```
@@ -413,59 +508,156 @@ int main() {
 #include <sys/stat.h>
 #include <mqueue.h>
 #include <unistd.h>
+#include <errno.h>
+#include <signal.h>
 
 #define QUEUE_NAME "/test_queue"
 #define MAX_SIZE 1024
 #define MAX_MESSAGES 10
+
+// Global variable for handling signals
+volatile sig_atomic_t done = 0;
+
+// Signal handler
+void handle_signal(int sig) {
+    done = 1;
+}
 
 int main() {
     mqd_t mq;
     struct mq_attr attr;
     char buffer[MAX_SIZE + 1];
     unsigned int prio;
+    ssize_t bytes_read;
+    
+    // Set up signal handling for clean termination
+    struct sigaction sa;
+    sa.sa_handler = handle_signal;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
     
     // Open the message queue
     mq = mq_open(QUEUE_NAME, O_RDONLY);
     if (mq == (mqd_t)-1) {
-        perror("mq_open");
-        exit(1);
+        perror("mq_open failed");
+        exit(EXIT_FAILURE);
     }
     
     // Get queue attributes
     if (mq_getattr(mq, &attr) == -1) {
-        perror("mq_getattr");
-        exit(1);
+        perror("mq_getattr failed");
+        mq_close(mq);
+        exit(EXIT_FAILURE);
     }
     
-    printf("Maximum # of messages on queue: %ld\n", attr.mq_maxmsg);
-    printf("Maximum message size: %ld\n", attr.mq_msgsize);
-    printf("# of messages currently on queue: %ld\n", attr.mq_curmsgs);
+    printf("Queue \"%s\" attributes:\n", QUEUE_NAME);
+    printf("  Maximum # of messages on queue: %ld\n", attr.mq_maxmsg);
+    printf("  Maximum message size: %ld bytes\n", attr.mq_msgsize);
+    printf("  # of messages currently on queue: %ld\n", attr.mq_curmsgs);
     
-    // Receive messages
-    while (1) {
-        ssize_t bytes_read = mq_receive(mq, buffer, MAX_SIZE, &prio);
+    printf("Waiting for messages (press Ctrl+C to quit)...\n");
+    
+    // Receive messages until interrupted
+    while (!done) {
+        bytes_read = mq_receive(mq, buffer, MAX_SIZE, &prio);
         
         if (bytes_read == -1) {
-            perror("mq_receive");
-            exit(2);
-        }
-        
-        buffer[bytes_read] = '\0';
-        
-        if (strncmp(buffer, "quit", strlen("quit")) == 0) {
+            if (errno == EINTR) {
+                // Interrupted by signal, check done flag
+                continue;
+            }
+            perror("mq_receive failed");
             break;
         }
         
+        buffer[bytes_read] = '\0';
         printf("Received message (priority %u): %s\n", prio, buffer);
+        
+        if (strncmp(buffer, "quit", strlen("quit")) == 0) {
+            printf("Quit command received\n");
+            break;
+        }
     }
     
-    // Close and remove the queue
-    mq_close(mq);
-    mq_unlink(QUEUE_NAME);
+    // Close the queue
+    if (mq_close(mq) == -1) {
+        perror("mq_close failed");
+    }
     
+    // Remove the queue
+    if (mq_unlink(QUEUE_NAME) == -1) {
+        perror("mq_unlink failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("Queue removed successfully\n");
     return 0;
 }
 ```
+
+### 9.3.8. Asynchronous Notification
+POSIX message queues support asynchronous notification when messages arrive:
+
+```c
+#include <mqueue.h>
+#include <signal.h>
+
+// Set up notification
+struct sigevent sev;
+sev.sigev_notify = SIGEV_SIGNAL;  // Send a signal
+sev.sigev_signo = SIGUSR1;        // Use SIGUSR1
+sev.sigev_value.sival_ptr = &mq;  // Can include data pointer
+
+// Register for notification
+if (mq_notify(mq, &sev) == -1) {
+    perror("mq_notify");
+    exit(EXIT_FAILURE);
+}
+
+// Signal handler
+void handle_message(int sig, siginfo_t *info, void *context) {
+    mqd_t *mqdes = info->si_value.sival_ptr;
+    
+    // Re-register for notification before reading
+    mq_notify(*mqdes, &sev);
+    
+    // Now read the message...
+}
+```
+
+### 9.3.9. Timed Message Operations
+POSIX message queues support timed operations for both sending and receiving:
+
+```c
+#include <mqueue.h>
+#include <time.h>
+
+// Set up timeout (5 seconds from now)
+struct timespec timeout;
+clock_gettime(CLOCK_REALTIME, &timeout);
+timeout.tv_sec += 5;
+
+// Timed receive
+ssize_t bytes = mq_timedreceive(mq, buffer, MAX_SIZE, &prio, &timeout);
+if (bytes == -1) {
+    if (errno == ETIMEDOUT) {
+        printf("Timed out waiting for message\n");
+    } else {
+        perror("mq_timedreceive");
+    }
+}
+
+// Timed send
+if (mq_timedsend(mq, buffer, strlen(buffer) + 1, 1, &timeout) == -1) {
+    if (errno == ETIMEDOUT) {
+        printf("Timed out waiting to send message\n");
+    } else {
+        perror("mq_timedsend");
+    }
+}
+```
+
 ---
 
 ## 9.4. Comparison Between System V and POSIX Message Queues
@@ -479,3 +671,20 @@ int main() {
 | Timeouts | Not supported | Supports timed send/receive operations |
 | Persistence | Persists until explicitly removed | Can be persistent or temporary |
 | Max Message Size | System-defined | Can be specified at creation time |
+| Header File | <sys/msg.h> | <mqueue.h> |
+| Access Control | IPC permissions | File permissions |
+| Message Selection | Can select by message type | Always receives highest priority message first |
+| API Style | Similar to other System V IPC | File descriptor-based API |
+| Error Reporting | Sets errno | Sets errno |
+
+### 9.4.1. When to Use System V Message Queues
+- Compatibility with older Unix systems
+- When working with existing System V IPC-based code
+- When message type-based selection is needed
+
+### 9.4.2. When to Use POSIX Message Queues
+- For new applications
+- When priority-based message handling is required
+- When notification features are needed
+- When timeouts are required for send/receive operations
+- When a more consistent API is preferred
