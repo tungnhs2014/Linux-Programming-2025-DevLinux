@@ -9,7 +9,6 @@ This is a command-line chat application that enables peer-to-peer messaging thro
 - Concurrent handling of multiple connections using threads
 - Real-time message exchange
 - Simple command-line interface
-- Thread-safe connection management
 - Clean resource handling and memory management
 
 ## Project Structure
