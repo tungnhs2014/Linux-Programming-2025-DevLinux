@@ -38,7 +38,7 @@ void print_my_port(int port) {
 
 /**
  * Get the IP address of the current device
- * Attempts to find a non-loopback IPv4 address
+ * Uses a simpler approach to get the primary IP address
  * 
  * @param ip_buffer Buffer to store the IP address
  * @param buffer_len Length of the buffer
@@ -48,62 +48,33 @@ bool get_my_ip(char *ip_buffer, size_t buffer_len) {
     // Validate input
     if (!ip_buffer || buffer_len < 16) return false;
     
-    struct ifaddrs *ifaddr, *ifa;
+    // Use system command to get IP - simpler approach
+    FILE *fd = popen("hostname -I | awk '{print $1}'", "r");
     
-    // Get list of all network interfaces
-    if (getifaddrs(&ifaddr) == -1) {
-        print_error("Failed to get network interfaces");
+    if (!fd) {
+        print_error("Failed to execute hostname command");
         return false;
     }
     
-    bool found = false;
-    
-    // Look for a non-loopback IPv4 address
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == NULL) continue;
-        
-        // Check for IPv4 addresses
-        if (ifa->ifa_addr->sa_family == AF_INET) {
-            struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
-            char *current_ip = inet_ntoa(addr->sin_addr);
-            
-            // Skip loopback addresses (127.0.0.1)
-            if (strncmp(current_ip, "127.", 4) != 0) {
-                strncpy(ip_buffer, current_ip, buffer_len - 1);
-                ip_buffer[buffer_len - 1] = '\0';  // Ensure null termination
-                found = true;
-                break;
-            }
-        }
-    }
-    
-    // Free the interface list
-    freeifaddrs(ifaddr);
-    
-    // Fallback method if no address found
-    if (!found) {
-        // Execute system command to get IP address
-        FILE *fd = popen("hostname -I | awk '{print $1}'", "r");
-        
-        if (!fd) {
-            print_error("Failed to execute hostname command");
-            return false;
-        }
-        
-        // Read output from command
-        if (fgets(ip_buffer, buffer_len, fd) != NULL) {
-            // Remove newline if present
-            size_t len = strlen(ip_buffer);
-            if (len > 0 && ip_buffer[len-1] == '\n') {
-                ip_buffer[len-1] = '\0';
-            }
-            found = true;
+    // Read output from command
+    if (fgets(ip_buffer, buffer_len, fd) != NULL) {
+        // Remove newline if present
+        size_t len = strlen(ip_buffer);
+        if (len > 0 && ip_buffer[len-1] == '\n') {
+            ip_buffer[len-1] = '\0';
         }
         
         pclose(fd);
+        return true;
     }
     
-    return found;
+    pclose(fd);
+    
+    // Fallback to localhost if no IP found
+    strncpy(ip_buffer, "127.0.0.1", buffer_len - 1);
+    ip_buffer[buffer_len - 1] = '\0';
+    
+    return true;
 }
 
 /**
@@ -119,7 +90,6 @@ void print_my_ip(char *ip_buffer) {
 
 /**
  * Clear input buffer to avoid issues with fgets
- * Removes any leftover characters in stdin
  */
 void clear_input_buffer() {
     int c;

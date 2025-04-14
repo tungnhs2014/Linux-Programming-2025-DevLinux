@@ -17,7 +17,6 @@ extern pthread_mutex_t device_list_mutex;
 
 /**
  * Get numeric code for command based on the user input
- * Maps string command to enum value for easier handling
  * 
  * @param command The command string entered by user
  * @return Command code enum value
@@ -57,7 +56,6 @@ void print_command_list() {
 
 /**
  * Process a command entered by the user
- * Parses the command and executes the corresponding action
  * 
  * @param command_line Full command line entered by user
  */

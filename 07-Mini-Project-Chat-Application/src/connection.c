@@ -67,7 +67,6 @@ int initialize_socket(device *dev, int port) {
 
 /**
  * Thread handler for accepting incoming connections
- * Runs in background waiting for new connections
  * 
  * @param args Thread arguments (not used)
  * @return NULL when thread exits
@@ -306,7 +305,6 @@ int disconnect_device(device *dev) {
 
 /**
  * Disconnect all devices and close their sockets
- * Used during program shutdown
  */
 void disconnect_all_devices() {
     pthread_mutex_lock(&device_list_mutex);

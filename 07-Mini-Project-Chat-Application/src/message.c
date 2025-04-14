@@ -63,7 +63,6 @@ int send_message(device *dev, const char *message) {
 
 /**
  * Thread function to handle receiving messages from a connected device
- * Runs in background listening for incoming messages from a specific connection
  * 
  * @param arg Pointer to device structure for this connection
  * @return NULL when thread exits
