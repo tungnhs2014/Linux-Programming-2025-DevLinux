@@ -67,11 +67,6 @@ The application supports the following commands:
 
 ## Building and Running
 
-### Dependencies
-- POSIX-compliant operating system (Linux, macOS, etc.)
-- GCC compiler
-- POSIX threads library (pthread)
-
 ### Building the Application
 Use the provided Makefile to build the application:
 ```bash
