@@ -1,119 +1,149 @@
 # Sensor Monitoring System
 
-## Introduction
+## Overview
 
-The Sensor Monitoring System is a comprehensive solution designed to collect, analyze, and store temperature data from multiple sensor nodes. This gateway system establishes TCP connections with sensor nodes, processes real-time temperature measurements, detects anomalies, and stores data in a persistent database while maintaining detailed logs of all system activities.
+The Sensor Monitoring System is a multi-threaded, multi-process gateway application designed to monitor room temperatures through a network of sensor nodes. It collects temperature data via TCP connections, processes the readings to detect conditions (too hot/cold), and stores all data in an SQLite database for future analysis.
 
-The system is built with a focus on reliability, efficiency, and scalability, capable of handling multiple concurrent sensor connections while maintaining data integrity through thread-safe operations.
+This system demonstrates advanced concepts in system programming including:
+- Multi-threading and process management
+- Thread synchronization and data sharing
+- Network programming with TCP sockets
+- Database operations with SQLite
+- Inter-process communication via FIFOs (named pipes)
+- Signal handling and resource management
 
 ## System Architecture
 
-The Sensor Monitoring System follows a multi-process, multi-threaded architecture:
+The system consists of three main components:
+
+1. **Sensor Nodes**: Physical or simulated devices that measure room temperature and transmit data to the gateway using TCP connections.
+
+2. **Sensor Gateway**: The core of the system with a multi-process, multi-threaded architecture:
+   - **Main Process**: Manages three worker threads and the shared buffer
+   - **Log Process**: Handles system-wide logging (runs as a separate process)
+
+3. **SQLite Database**: Stores all sensor data for long-term persistence and analysis
+
+## Gateway Architecture
+
+The Sensor Gateway implements a sophisticated architecture:
 
 ### Main Process
-The main process orchestrates the system and contains three specialized threads:
-
-1. **Connection Manager Thread**
-   - Manages TCP connections from sensor nodes
-   - Handles connection establishment, data reception, and timeouts
-   - Uses epoll for efficient I/O multiplexing
-   - Validates incoming sensor data and inserts it into the shared buffer
-
-2. **Data Manager Thread**
-   - Reads sensor data from the shared buffer (without removing it)
-   - Calculates running average temperatures
-   - Detects abnormal temperature conditions (too hot/too cold)
-   - Generates log events for temperature anomalies
-
-3. **Storage Manager Thread**
-   - Reads and removes sensor data from the shared buffer
-   - Stores data in SQLite database
-   - Handles database connection errors with retry mechanism
-   - Creates necessary database tables if they don't exist
+Contains three primary threads:
+- **Connection Manager (connmgr)**: Handles TCP socket connections from sensor nodes, receives data packets
+- **Data Manager (datamgr)**: Processes temperature readings, calculates running averages, detects temperature conditions
+- **Storage Manager (storagemgr)**: Writes sensor data to the SQLite database
 
 ### Log Process
-A separate child process forked from the main process:
-   - Receives log events from all threads via a named FIFO
-   - Formats log messages with sequence numbers and timestamps
-   - Writes log entries to a dedicated log file
+- Spawned by the main process using `fork()`
+- Receives log events via a FIFO (named pipe)
+- Formats and writes log entries to a log file
+- Provides sequence numbers and timestamps for each log entry
 
-### Communication Mechanisms
-1. **Shared Buffer**
-   - Thread-safe linked list structure for inter-thread communication
-   - Protected by mutex and condition variables
-   - Implements producer-consumer pattern with:
-     - Connection Manager as producer
-     - Data Manager and Storage Manager as consumers
+### Shared Buffer
+- Thread-safe data structure for passing sensor data between threads
+- Uses mutex locks and condition variables for synchronization
+- Implements a multi-consumer model where data is only removed when processed by all consumers
 
-2. **Named FIFO**
-   - Used for inter-process communication between Main Process and Log Process
-   - Allows asynchronous logging without blocking main operations
-
-Project Structure
-The project is organized into the following components:
-```mermaid
-mindmap
-  root((Sensor Monitoring System))
-    Core Components
-      main.c
-      common.h
-      sensor_data.h
-    Shared Buffer
-      sbuffer.h/c
-    Manager Threads
-      connmgr.h/c
-      datamgr.h/c
-      storagemgr.h/c
-    Log Process
-      log_process.h/c
-    Utilities
-      sensor_db.h/c
-      fifo_utils.h/c
-    Build & Data
-      Makefile
-      room_sensor.map
-```
+## Directory Structure
 
 ```
-├── main.c                  # Entry point of the program
-├── common.h                # Common definitions and constants
-├── sensor_data.h           # Sensor data structures and log event definitions
-│
-├── sbuffer.c/h             # Thread-safe shared buffer implementation
-│
-├── connmgr.c/h             # Connection manager implementation
-├── datamgr.c/h             # Data manager implementation
-├── storagemgr.c/h          # Storage manager implementation
-│
-├── log_process.c/h         # Log process implementation
-│
-├── sensor_db.c/h           # Sensor-to-room mapping management
-├── fifo_utils.c/h          # FIFO utilities for inter-process communication
-│
-├── Makefile                # Build system
-└── room_sensor.map         # Sensor-to-room mapping data file
+sensor_monitoring_system/
+├── bin/                 # Compiled binary files
+├── include/             # Header files
+│   ├── config.h         # Configuration parameters
+│   ├── connmgr.h        # Connection manager interface
+│   ├── datamgr.h        # Data manager interface
+│   ├── log.h            # Log process interface
+│   ├── sbuffer.h        # Shared buffer interface
+│   └── sensor_db.h      # Storage manager interface
+├── obj/                 # Object files
+├── src/                 # Source files
+│   ├── connmgr.c        # Connection manager implementation
+│   ├── datamgr.c        # Data manager implementation
+│   ├── log.c            # Log process implementation
+│   ├── main.c           # Main program
+│   ├── sbuffer.c        # Shared buffer implementation
+│   └── sensor_db.c      # Storage manager implementation
+├── Makefile             # Build configuration
+└── README.md            # Project documentation
 ```
 
-### Core Components:
-- **main.c**: Program entry point that initializes resources, creates threads, and manages the main process lifecycle
-- **common.h**: Defines constants, error codes, and macros used throughout the system
-- **sensor_data.h**: Contains data structures for sensor data and log events
+## Building and Running
 
-### Buffer Implementation:
-- **sbuffer.c/h**: Implementation of a thread-safe shared buffer with mutex and condition variables
+### Prerequisites
+- GCC compiler
+- SQLite3 development libraries (`libsqlite3-dev`)
+- POSIX-compliant system (Linux recommended)
 
-### Thread Implementations:
-- **connmgr.c/h**: Connection manager thread implementation using epoll for efficient I/O handling
-- **datamgr.c/h**: Data manager thread for processing and analyzing temperature data
-- **storagemgr.c/h**: Storage manager thread for database operations
+### Build Instructions
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/sensor-monitoring-system.git
+cd sensor-monitoring-system
 
-### Log Process:
-- **log_process.c/h**: Implementation of the separate log process
+# Create the room-sensor mapping file
+make setup
 
-### Utilities:
-- **sensor_db.c/h**: Manages the mapping between sensor IDs and room numbers
-- **fifo_utils.c/h**: Utilities for working with named FIFOs in a thread-safe manner
+# Build the project
+make
 
-### Build and Data:
-- **Makefile**: Configures the build process with various targets
-- **room_sensor.map**: Data file containing sensor-to-room mappings
+# Run with a specified port
+./bin/sensor_gateway 5678
+```
+
+### Memory Check with Valgrind
+```bash
+make memcheck
+```
+
+## Implementation Details
+
+### Shared Buffer
+
+The shared buffer is implemented as a thread-safe linked list with the following features:
+- Mutex lock for synchronized access
+- Condition variable to signal when data is available
+- Multi-consumer design where data is only removed after all consumers have processed it
+- Consumer-specific tracking of processed data
+
+### Connection Manager
+
+- Uses `select()` for managing multiple client connections
+- Handles connection timeouts and graceful disconnection
+- Parses incoming sensor data packets and forwards them to the shared buffer
+
+### Data Manager
+
+- Loads sensor-to-room mappings from a configuration file
+- Maintains a running average of temperature for each sensor
+- Detects and logs "too hot" or "too cold" conditions based on thresholds
+- Associates room IDs with sensor readings for context
+
+### Storage Manager
+
+- Creates and maintains the SQLite database schema
+- Stores sensor readings with room context
+- Handles database connection failures with automatic retry logic
+- Provides statistics on stored records
+
+### Log Process
+
+- Runs as a separate process from the main application
+- Receives log messages via a FIFO (named pipe)
+- Formats log entries with sequence numbers and timestamps
+- Writes to a persistent log file for later analysis
+
+## Key Requirements Fulfillment
+
+### Functional Requirements
+1. ✅ Connection Management: Handles multiple concurrent connections with session tracking
+2. ✅ Message Sending/Receiving: Processes sensor data packets efficiently
+3. ✅ System Status Management: Provides real-time status information
+4. ✅ Exit and Recovery: Implements graceful shutdown and error recovery
+
+### Non-Functional Requirements
+1. ✅ Performance: Uses efficient I/O multiplexing and resource management
+2. ✅ Reliability: Implements fault tolerance and retry mechanisms
+3. ✅ Memory Management: Prevents memory leaks with proper resource cleanup
+4. ✅ Code Quality: Modular design with clean separation of concerns
