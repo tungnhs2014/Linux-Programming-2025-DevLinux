@@ -5,8 +5,11 @@
 
 #include "config.h"
 #include "sbuffer.h"
+#include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 /**
  * Print usage information
@@ -44,9 +47,23 @@ int main(int argc, char const *argv[])
     // Free shared buffer
     sbuffer_free(&buffer);
 
-    // Open log FIFO for writing
-    int log_fd;
+    // Start log process
+    pid_t log_pid = log_start(LOG_FIFO_PATH, LOG_FILE_PATH);
+    if (log_pid < 0) {
+        fprintf(stderr, "ErrorL Failed to start log process");
+        sbuffer_free(&buffer);
+        return EXIT_FAILURE;
+    }
 
+    // Open log FIFO for writing
+    int log_fd = log_open_fifo(LOG_FIFO_PATH);
+    // if (log_fd < 0) {
+    //     fprintf(stderr, "Error: Failed to open log FIFO for writing\n");
+    //     sbuffer_free(&buffer);
+    //     // kill log process
+    //     kill(log_fd, SIGTERM);
+    //     return EXIT_FAILURE;
+    // }
     
     return EXIT_SUCCESS;
 }
