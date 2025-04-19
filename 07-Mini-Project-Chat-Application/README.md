@@ -147,7 +147,7 @@ Message sent to device with ID: 0
 ### Receiving a Message
 ```
 ***Message received from: 192.168.1.10
-***Sender Port:          9000
+***Sender Port:          45678
 -->Message:              Hi there! I'm doing well, thanks for asking.
 
 Enter command: 
