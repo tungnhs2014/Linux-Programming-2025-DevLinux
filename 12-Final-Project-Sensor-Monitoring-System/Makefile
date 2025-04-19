@@ -48,6 +48,6 @@ valgrind-log: $(TARGET)
 # Clean all compiled files
 clean:
 	@rm -rf $(OBJ_DIR) $(BIN_DIR) $(LOG_DIR)
-	@rm -rf logfifo
+	@rm -rf logfifo *.log
 	
 .PHONY: all clean valgrind-check valgrind-log

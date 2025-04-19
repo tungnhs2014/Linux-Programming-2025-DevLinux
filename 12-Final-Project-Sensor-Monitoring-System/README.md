@@ -78,72 +78,14 @@ sensor_monitoring_system/
 
 ### Build Instructions
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/sensor-monitoring-system.git
-cd sensor-monitoring-system
-
-# Create the room-sensor mapping file
-make setup
-
 # Build the project
 make
 
 # Run with a specified port
-./bin/sensor_gateway 5678
+./bin/sensor_gateway 8080
 ```
 
 ### Memory Check with Valgrind
 ```bash
-make memcheck
+make valgrind-check
 ```
-
-## Implementation Details
-
-### Shared Buffer
-
-The shared buffer is implemented as a thread-safe linked list with the following features:
-- Mutex lock for synchronized access
-- Condition variable to signal when data is available
-- Multi-consumer design where data is only removed after all consumers have processed it
-- Consumer-specific tracking of processed data
-
-### Connection Manager
-
-- Uses `select()` for managing multiple client connections
-- Handles connection timeouts and graceful disconnection
-- Parses incoming sensor data packets and forwards them to the shared buffer
-
-### Data Manager
-
-- Loads sensor-to-room mappings from a configuration file
-- Maintains a running average of temperature for each sensor
-- Detects and logs "too hot" or "too cold" conditions based on thresholds
-- Associates room IDs with sensor readings for context
-
-### Storage Manager
-
-- Creates and maintains the SQLite database schema
-- Stores sensor readings with room context
-- Handles database connection failures with automatic retry logic
-- Provides statistics on stored records
-
-### Log Process
-
-- Runs as a separate process from the main application
-- Receives log messages via a FIFO (named pipe)
-- Formats log entries with sequence numbers and timestamps
-- Writes to a persistent log file for later analysis
-
-## Key Requirements Fulfillment
-
-### Functional Requirements
-1. ✅ Connection Management: Handles multiple concurrent connections with session tracking
-2. ✅ Message Sending/Receiving: Processes sensor data packets efficiently
-3. ✅ System Status Management: Provides real-time status information
-4. ✅ Exit and Recovery: Implements graceful shutdown and error recovery
-
-### Non-Functional Requirements
-1. ✅ Performance: Uses efficient I/O multiplexing and resource management
-2. ✅ Reliability: Implements fault tolerance and retry mechanisms
-3. ✅ Memory Management: Prevents memory leaks with proper resource cleanup
-4. ✅ Code Quality: Modular design with clean separation of concerns

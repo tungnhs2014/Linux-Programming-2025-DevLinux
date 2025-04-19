@@ -57,13 +57,19 @@ int main(int argc, char const *argv[])
 
     // Open log FIFO for writing
     int log_fd = log_open_fifo(LOG_FIFO_PATH);
-    // if (log_fd < 0) {
-    //     fprintf(stderr, "Error: Failed to open log FIFO for writing\n");
-    //     sbuffer_free(&buffer);
-    //     // kill log process
-    //     kill(log_fd, SIGTERM);
-    //     return EXIT_FAILURE;
-    // }
+    if (log_fd < 0) {
+        fprintf(stderr, "Error: Failed to open log FIFO for writing\n");
+        sbuffer_free(&buffer);
+        // kill log process
+        // kill(log_fd, SIGTERM);
+        // return EXIT_FAILURE;
+    }
     
-    return EXIT_SUCCESS;
+    // Start connection manager
+    if (connmgr_star(port, buffer, log_fd) != 0) {
+        fprintf(stderr, "Error: Failed to start connection manager\n");
+        close(log_fd);
+        sbuffer_free(&buffer);
+    }
+    return 0;
 }
