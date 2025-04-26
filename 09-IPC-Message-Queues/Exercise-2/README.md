@@ -1,4 +1,4 @@
-# Exercise 2: Count Characters Using POSIX Message Queue
+## Exercise 2: Count Characters Using POSIX Message Queue
 
 ## Description
 Extend the previous exercise to let the child process count the number of characters in the received message.
@@ -21,12 +21,12 @@ Extend the previous exercise to let the child process count the number of charac
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing character counting with message queues
 ```
 
 ---
@@ -53,6 +53,7 @@ $ ./bin/exam
 [Child] Message received: Hello, I am TungNHS
 [Child] Character count: 19
 [Parent] Character count received from child: 19
+[Parent] Child exited with status 0
 [Parent] Cleaning up message queues...
 ```
 

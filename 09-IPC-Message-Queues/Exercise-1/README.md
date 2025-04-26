@@ -1,4 +1,4 @@
-# Exercise 1: Simple Message Sending and Receiving with POSIX Message Queue
+## Exercise 1: Simple Message Sending and Receiving with POSIX Message Queue
 
 ## Description
 Write a program that uses **POSIX message queues** to send and receive a simple message
@@ -19,12 +19,12 @@ Write a program that uses **POSIX message queues** to send and receive a simple 
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing POSIX message queues
 ```
 
 ---
@@ -49,6 +49,7 @@ Parent process ID: 3571
 Child process ID: 3572
 [Parent] Sending message: Hello TungNHS
 [Child] Message received: Hello TungNHS
+[Parent] Child exited with status 0
 [Parent] Cleaning up message queue...
 ```
 

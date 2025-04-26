@@ -20,12 +20,12 @@ This project implements a C program where the child process replaces the running
 ## Project Structure
 ```
 ├── bin/         
-│   └── exam
-├── Makefile     
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/        
-    └── main.c
+    └── main.c              # Source code implementing exec functions
 ```
 
 ## Build and Run Instructions
@@ -36,7 +36,8 @@ $ make
 ```
 ### Run the program
 ```bash
-./bin/exam
+./bin/exam 1    # To execute the 'ls' command
+./bin/exam 2    # To execute the 'date' command
 ```
 ### Clean the project
 ```bash

@@ -1,4 +1,4 @@
-# Exercise 4: Ignoring SIGTSTP Signal
+## Exercise 4: Ignoring SIGTSTP Signal
 
 ## Description
 Write a program that can ignore the **SIGTSTP** signal (commonly triggered by pressing `Ctrl+Z`).
@@ -48,12 +48,12 @@ int main() {
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing SIGTSTP handling
 ```
 
 ---
@@ -75,15 +75,17 @@ $ ./bin/exam
 ### Example Run
 ```bash
 Program started. Press Ctrl + Z to test SIGTSTP handling
-^Zograming is running count: 1
+Programming is running count: 1
+^Z
 SIGTSTP ignored
-^Zograming is running count: 3
+Programming is running count: 3
+^Z
 SIGTSTP ignored
-^Zograming is running count: 4
+Programming is running count: 4
+^Z
 SIGTSTP ignored
-^Zograming is running count: 6
-SIGTSTP ignored
-^Cograming is running count: 7
+Programming is running count: 6
+^C
 ```
 
 ### Clean the project

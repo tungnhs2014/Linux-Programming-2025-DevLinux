@@ -1,4 +1,4 @@
-# Exercise 5: Signal Handling with User Input
+## Exercise 5: Signal Handling with User Input
 
 ## Description
 Write a C program that can simultaneously handle signals and accept user input from the keyboard.
@@ -20,12 +20,12 @@ SIGINT received.
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing signal handling with select()
 ```
 
 ---
@@ -54,7 +54,6 @@ User input: hello world
 SIGINT received
 ^C
 SIGINT received
-
 ```
 
 #### Sending SIGTERM from Another Terminal:

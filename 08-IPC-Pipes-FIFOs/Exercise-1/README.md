@@ -1,4 +1,4 @@
-# Exercise 1: Using Pipe for Communication Between Parent and Child Process
+## Exercise 1: Using Pipe for Communication Between Parent and Child Process
 
 ## Description
 Write a program that uses a **pipe** to enable communication between two processes.
@@ -21,12 +21,12 @@ Write a program that uses a **pipe** to enable communication between two process
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing pipe-based IPC
 ```
 
 ---
@@ -47,10 +47,11 @@ $ ./bin/exam
 
 ### Example Run
 ```bash
-Parent process (PID: 5331) sending message: Hello from parrent message
-Child process (PID: 5332) received message: Hello from parrent message
+Parent process (PID: 5331) sending message: Hello from parent process
+Child process (PID: 5332) received message: Hello from parent process
 Child process terminated
-Paren process terminated
+Parent process: Child exited with status 0
+Parent process terminated
 ```
 
 ### Clean the project

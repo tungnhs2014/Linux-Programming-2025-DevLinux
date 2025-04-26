@@ -1,4 +1,4 @@
-# Exercise 6: Summing an Array with Threads and Mutex
+## Exercise 6: Summing an Array with Threads and Mutex
 
 ## Description
 Write a program to compute the sum of a large array containing 1 million integers using multithreading and mutex for synchronization.
@@ -9,7 +9,6 @@ Write a program to compute the sum of a large array containing 1 million integer
 3. Use a **global sum variable** and **mutex** to safely aggregate results from all threads.
 4. Print the **final sum** after all threads finish execution.
 
-
 ## Hint
 - Use `pthread_mutex_lock` and `pthread_mutex_unlock` to protect the shared sum variable when threads update it.
 
@@ -19,12 +18,12 @@ Write a program to compute the sum of a large array containing 1 million integer
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing multithreaded summing
 ```
 ---
 
@@ -44,9 +43,10 @@ $ ./bin/exam
 
 ### Example output
 ```bash
-Initializing array with 1 million random numbers...
+Initializing array with 1000000 random numbers...
 Creating 4 threads to calculate sum...
-Sum of the array: 49486907
+Sum of the array (multithreaded): 49486907
+Sum of partial results (verification): 49486907
 ```
 
 ### Clean the project

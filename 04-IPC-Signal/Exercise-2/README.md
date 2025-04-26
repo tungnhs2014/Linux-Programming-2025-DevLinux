@@ -1,4 +1,4 @@
-# Exercise 2: Using SIGALRM to Create a Timer
+## Exercise 2: Using SIGALRM to Create a Timer
 
 ## Description
 This project implements a timer using the **SIGALRM** signal. The program sets an alarm to trigger every second and counts the elapsed time up to 10 seconds.
@@ -6,6 +6,7 @@ This project implements a timer using the **SIGALRM** signal. The program sets a
 ## Requirements
 **1. Setting the Alarm:**
 - Use the `alarm()` function to trigger **SIGALRM** every second.
+
 **2. Signal Handling:**
 - Use the `signal()` function to register the handler for **SIGALRM**.
 - Increase the timer count and print the message:
@@ -33,12 +34,12 @@ Timer: <seconds> seconds
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing timer with SIGALRM
 ```
 
 ---

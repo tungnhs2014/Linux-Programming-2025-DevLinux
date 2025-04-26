@@ -1,8 +1,8 @@
-# Build exercise 5
-# Makefile for building the 'zombie' and 'orphan' executables
+# Makefile for Exercise 5: Creating Zombie and Orphan Processes
 
-# Compiler and tools
+# Compiler and flags
 CC = gcc
+CFLAGS = -Wall -Werror -g
 
 # Directory structure
 CUR_DIR := .
@@ -10,8 +10,8 @@ SRC_DIR := $(CUR_DIR)/src
 OBJ_DIR := $(CUR_DIR)/obj
 BIN_DIR := $(CUR_DIR)/bin
 
-# Create necessary directories
-$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR))
+# Phony targets (not associated with files)
+.PHONY: all clean directories
 
 # Source files
 ZOMBIE_SRC := $(SRC_DIR)/zombie.c
@@ -26,27 +26,28 @@ ZOMBIE_EXEC := $(BIN_DIR)/zombie
 ORPHAN_EXEC := $(BIN_DIR)/orphan
 
 # Default target builds both executables
-all: $(ZOMBIE_EXEC) $(ORPHAN_EXEC)
+all: directories $(ZOMBIE_EXEC) $(ORPHAN_EXEC)
+
+# Create required directories
+directories:
+	mkdir -p $(SRC_DIR) $(OBJ_DIR) $(BIN_DIR)
 
 # Compile zombie.c to object file in obj directory
-$(OBJ_DIR)/zombie.o: $(SRC_DIR)/zombie.c
-	$(CC) -c $< -o $@
+$(ZOMBIE_OBJ): $(ZOMBIE_SRC)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Compile orphan.c to object file in obj directory
-$(OBJ_DIR)/orphan.o: $(SRC_DIR)/orphan.c
-	$(CC) -c $< -o $@
+$(ORPHAN_OBJ): $(ORPHAN_SRC)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Link the zombie executable from its object file
-$(ZOMBIE_EXEC): $(OBJ_DIR)/zombie.o
-	$(CC) $(OBJ_DIR)/zombie.o -o $(ZOMBIE_EXEC)
+$(ZOMBIE_EXEC): $(ZOMBIE_OBJ)
+	$(CC) $(CFLAGS) $< -o $@
 
 # Link the orphan executable from its object file
-$(ORPHAN_EXEC): $(OBJ_DIR)/orphan.o
-	$(CC) $(OBJ_DIR)/orphan.o -o $(ORPHAN_EXEC)
+$(ORPHAN_EXEC): $(ORPHAN_OBJ)
+	$(CC) $(CFLAGS) $< -o $@
 
-# Clean target to remove the obj and bin directories
+# Clean up
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
-
-.PHONY: all clean
-

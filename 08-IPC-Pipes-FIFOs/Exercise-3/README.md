@@ -1,4 +1,4 @@
-# Exercise 3: Count Characters Using Pipe Between Parent and Child Process
+## Exercise 3: Count Characters Using Pipe Between Parent and Child Process
 
 ## Description
 Write a program that uses a **pipe to count** the number of characters in a string.
@@ -20,12 +20,12 @@ Write a program that uses a **pipe to count** the number of characters in a stri
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing character counting via pipe
 ```
 
 ---
@@ -50,6 +50,7 @@ Parent process (PID: 3620) sending a message: Welcome Nguyen Huu Son Tung
 Child process (PID: 3621) received a message: Welcome Nguyen Huu Son Tung
 Child process counted 27 characters in the received string
 Child process terminated
+Parent: Child exited with status 0
 Parent process terminated
 ```
 

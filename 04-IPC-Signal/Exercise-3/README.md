@@ -1,4 +1,4 @@
-# Exercise 3: Inter-Process Communication using Signals
+## Exercise 3: Inter-Process Communication using Signals
 
 ## Description
 Write a program to create two processes (parent and child) and use the **SIGUSR1** signal to communicate between them.
@@ -26,12 +26,12 @@ Write a program to create two processes (parent and child) and use the **SIGUSR1
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing IPC with signals
 ```
 
 ---
@@ -55,10 +55,15 @@ $ ./bin/exam
 Parent process. PID: 2145, Child PID: 2146
 Child process started. PID: 2146
 Sent signal 1 to child process
+Received signal from parent process
 Sent signal 2 to child process
+Received signal from parent process
 Sent signal 3 to child process
+Received signal from parent process
 Sent signal 4 to child process
+Received signal from parent process
 Sent signal 5 to child process
+Received signal from parent process
 Sent 5 signals. Terminating child process...
 Child process terminated. Parent exiting
 ```

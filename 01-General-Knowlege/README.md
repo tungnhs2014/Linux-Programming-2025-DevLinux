@@ -668,10 +668,6 @@ objdump -p libutils.so | grep SONAME
 - [Official GNU Make Manual](https://www.gnu.org/software/make/manual/make.html)
 - [Make Quick Reference](https://www.gnu.org/software/make/manual/html_node/Quick-Reference.html)
 
-### 1.4.2. C Programming and Compilation
-- [GCC Command Options](https://gcc.gnu.org/onlinedocs/gcc/Invoking-GCC.html)
-- [C Programming Language Standard](https://en.cppreference.com/w/c/language)
-
-### 1.4.3. Library Creation and Management
+### 1.4.2. Library Creation and Management
 - [Creating Libraries with GCC](https://renenyffenegger.ch/notes/development/languages/C-C-plus-plus/GCC/create-libraries/index)
 - [Advanced Library Versioning](https://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html)

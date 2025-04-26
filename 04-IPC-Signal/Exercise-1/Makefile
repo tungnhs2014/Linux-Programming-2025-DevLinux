@@ -1,7 +1,8 @@
-# Build exercise 1
+# Makefile for Exercise 1: Handling SIGINT Signal
 
-# Compiler and tools
+# Compiler and flags
 CC = gcc
+CFLAGS = -Wall -Werror -g
 
 # Directory structure
 CUR_DIR := .
@@ -9,31 +10,32 @@ SRC_DIR := $(CUR_DIR)/src
 OBJ_DIR := $(CUR_DIR)/obj
 BIN_DIR := $(CUR_DIR)/bin
 
-# Find all .c files in src/
-SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
+# Target executable name
+TARGET = exam
+EXEC = $(BIN_DIR)/$(TARGET)
 
-# Convert .c filenames to .o for obj/
-OBJ_FILES := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
+# Find all source files and generate corresponding object file paths
+SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
-# Ensure necessary directories exist before compiling
-$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR))
+# Phony targets (not associated with files)
+.PHONY: all clean directories
 
-# Define output file names
-EXEC = $(BIN_DIR)/exam
+# Default target
+all: directories $(EXEC)
 
-# Build target
-all: $(EXEC)
+# Create required directories
+directories:
+	mkdir -p $(SRC_DIR) $(OBJ_DIR) $(BIN_DIR)
 
-# Rule to compile object files
+# Rule to build object files from source files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Rule to link the final executable
+# Rule to link object files into final executable
 $(EXEC): $(OBJ_FILES)
-	$(CC) $(OBJ_FILES) -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 
-# Clean all compiled files
+# Clean up build artifacts
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
-
-.PHONY: all clean

@@ -1,4 +1,4 @@
-# Exercise 2: Using Multiple Pipes for Communication Between Processes
+## Exercise 2: Using Multiple Pipes for Communication Between Processes
 
 ## Description
 Extend the previous exercise by using **multiple pipes** to enable communication among three processes.
@@ -23,12 +23,12 @@ Extend the previous exercise by using **multiple pipes** to enable communication
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing multi-pipe IPC
 ```
 
 ---
@@ -57,6 +57,8 @@ Child 1 sent message to Child 2
 Child 1 process terminated
 Child 2 process (PID: 2472) received message: Hello TungNHS - Nguyen Huu Son Tung
 Child 2 process terminated
+Parent: Child 1 exited with status 0
+Parent: Child 2 exited with status 0
 Parent process terminated
 ```
 

@@ -1,4 +1,4 @@
-# Exercise 4: Process Status Recording
+## Exercise 4: Process Status Recording
 
 ## Description
 This project implements a program that creates a **child process**, and the parent process uses **wait()** to wait for the child process to terminate and record its exit status.
@@ -16,12 +16,12 @@ This project implements a program that creates a **child process**, and the pare
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing process status monitoring
 ```
 
 ---

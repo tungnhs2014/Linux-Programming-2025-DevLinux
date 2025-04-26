@@ -1,4 +1,4 @@
-# Exercise 3: Using Condition Variables
+## Exercise 3: Using Condition Variables
 
 ## Description
 Write a program with two threads: producer and consumer, as follows:
@@ -10,7 +10,7 @@ Write a program with two threads: producer and consumer, as follows:
 4. Repeat the above process **10 times** and print all the values read by the consumer.
 
 ## Hint
-- Use `thread_cond_wait` to make the consumer wait until it receives a signal from the producer indicating that the data is ready.
+- Use `pthread_cond_wait` to make the consumer wait until it receives a signal from the producer indicating that the data is ready.
 
 ---
 
@@ -18,12 +18,12 @@ Write a program with two threads: producer and consumer, as follows:
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing condition variables
 ```
 ---
 
@@ -43,29 +43,33 @@ $ ./bin/exam
 
 ### Example output
 ```bash
+Starting producer-consumer demonstration with condition variables
+Will perform 10 iterations of produce-consume cycle
+Producer: Generated data = 7
+Consumer: Consumed data = 7
+Producer: Generated data = 3
+Consumer: Consumed data = 3
+Producer: Generated data = 9
+Consumer: Consumed data = 9
+Producer: Generated data = 2
+Consumer: Consumed data = 2
+Producer: Generated data = 5
+Consumer: Consumed data = 5
 Producer: Generated data = 10
 Consumer: Consumed data = 10
 Producer: Generated data = 1
 Consumer: Consumed data = 1
-Producer: Generated data = 2
-Consumer: Consumed data = 2
-Producer: Generated data = 9
-Consumer: Consumed data = 9
+Producer: Generated data = 6
+Consumer: Consumed data = 6
+Producer: Generated data = 4
+Consumer: Consumed data = 4
 Producer: Generated data = 8
 Consumer: Consumed data = 8
-Producer: Generated data = 2
-Consumer: Consumed data = 2
-Producer: Generated data = 5
-Consumer: Consumed data = 5
-Producer: Generated data = 3
-Consumer: Consumed data = 3
-Producer: Generated data = 5
-Consumer: Consumed data = 5
-Producer: Generated data = 7
-Consumer: Consumed data = 7
 
 All values read:
-Value: 10       Value: 1        Value: 2        Value: 9        Value: 8        Value: 2        Value: 5        Value: 3        Value: 5        Value: 7
+Value: 7        Value: 3        Value: 9        Value: 2        Value: 5        Value: 10       Value: 1        Value: 6        Value: 4        Value: 8
+
+All iterations completed successfully
 ```
 
 ### Clean the project

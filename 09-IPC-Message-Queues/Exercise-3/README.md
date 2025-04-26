@@ -1,4 +1,4 @@
-# Exercise 3: Communication Between Multiple Processes Using POSIX Message Queues
+## Exercise 3: Communication Between Multiple Processes Using POSIX Message Queues
 
 ## Description
 Write a program that uses **POSIX message queues** to communicate between **three processes**.
@@ -20,12 +20,12 @@ Write a program that uses **POSIX message queues** to communicate between **thre
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing multi-process IPC
 ```
 
 ---
@@ -51,6 +51,8 @@ $ ./bin/exam
 [Child 1] Process ID: 3748
 [Child 2] Process ID: 3749
 Child 2 received message: HELLO TUNGNHS NGUYEN HUU SON TUNG!
+[Parent] Child 1 exited with status 0
+[Parent] Child 2 exited with status 0
 [Parent] Done.
 ```
 

@@ -14,12 +14,12 @@ This project implements a program that creates a **parent-child process** pair. 
 ```
 project/
 ├── bin/        
-│   └── exam
-├── Makefile  
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/        
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/        
-    └── main.c
+    └── main.c              # Source code implementing signal handling
 ```
 
 ---

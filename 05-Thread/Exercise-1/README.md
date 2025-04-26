@@ -1,4 +1,4 @@
-# Exercise 1: Basic Thread Creation and Execution
+## Exercise 1: Basic Thread Creation and Execution
 
 ## Description
 Write a C program using the **pthread.h** library to perform the following tasks:
@@ -21,12 +21,12 @@ Thread 1: Hello from thread.
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing thread creation
 ```
 ---
 
@@ -49,7 +49,8 @@ $ ./bin/exam
 Main: Created thread 1
 Thread 1: Hello from thread!
 Main: Created thread 2
-Thread 2: Hello from thread!s
+Thread 2: Hello from thread!
+Main: All threads have completed execution
 ```
 
 ### Clean the project

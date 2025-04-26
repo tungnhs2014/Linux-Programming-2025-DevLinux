@@ -1,4 +1,4 @@
-# Exercise 5: Sharing Resources with Read-Write Lock
+## Exercise 5: Sharing Resources with Read-Write Lock
 
 ## Description
 Write a program to simulate a scenario where multiple threads read and write shared data:
@@ -22,12 +22,12 @@ Write a program to simulate a scenario where multiple threads read and write sha
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing read-write locks
 ```
 ---
 
@@ -47,6 +47,10 @@ $ ./bin/exam
 
 ### Example output
 ```bash
+Starting read-write lock demonstration
+Creating 5 reader threads and 2 writer threads
+Each thread will perform 5 iterations
+
 Writer 1 update data to: 1
 Writer 2 update data to: 2
 Reader 1 reads data: 2
@@ -83,7 +87,9 @@ Writer 2 update data to: 8
 Writer 1 update data to: 9
 Writer 2 update data to: 10
 
+All threads completed execution
 Final value of data: 10
+Expected value: 10
 ```
 
 ### Clean the project

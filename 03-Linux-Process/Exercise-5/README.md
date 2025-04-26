@@ -1,4 +1,4 @@
-# Exercise 5: Creating Zombie and Orphan Processes
+## Exercise 5: Creating Zombie and Orphan Processes
 
 ## Description
 This project demonstrates how to create **zombie** and **orphan** processes in Linux to understand these special process states.
@@ -36,17 +36,16 @@ This project demonstrates how to create **zombie** and **orphan** processes in L
 ## Project Structure
 ```
 ├── bin
-│   ├── orphan
-│   └── zombie
+│   ├── orphan              # Executable demonstrating orphan process
+│   └── zombie              # Executable demonstrating zombie process
 ├── Exercise-5.md
-├── Makefile
+├── Makefile                # Build automation script
 ├── obj
-│   ├── orphan.o
-│   └── zombie.o
+│   ├── orphan.o            # Compiled object file for orphan
+│   └── zombie.o            # Compiled object file for zombie
 └── src
-    ├── orphan.c
-    └── zombie.c
-
+    ├── orphan.c            # Source code creating an orphan process
+    └── zombie.c            # Source code creating a zombie process
 ```
 
 ---
@@ -60,7 +59,7 @@ $ make
 ```
 
 ### Run the Zombie Program
-To execute Zombiee program, use:
+To execute the Zombie program, use:
 ```bash
 $ ./bin/zombie
 ```
@@ -79,7 +78,7 @@ After running, use:
 ```bash
 $ ps -ef | grep -iE orphan
 ```
-to verify that the child process’s parent (PPID) is now 1 (adopted by init).
+to verify that the child process's parent (PPID) is now 1 (adopted by init).
 
 ### Clean the project
 To remove all compiled files and binaries, run:

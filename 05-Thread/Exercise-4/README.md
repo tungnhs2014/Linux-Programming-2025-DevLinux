@@ -1,4 +1,4 @@
-# Exercise 4: Counting Even and Odd Numbers with Threads
+## Exercise 4: Counting Even and Odd Numbers with Threads
 
 ## Description
 Write a program to perform the following tasks:
@@ -18,12 +18,12 @@ Write a program to perform the following tasks:
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing threaded counting
 ```
 ---
 
@@ -43,9 +43,13 @@ $ ./bin/exam
 
 ### Example output
 ```bash
+Generating 100 random numbers and counting even/odd numbers using threads
+Generated numbers: 42 68 35 1 79 95 27 62 3 84 ...
+Created two threads to count even and odd numbers
+Both threads have completed
 Total even numbers: 53
-Total count numbers: 47
-Total numers: 100
+Total odd numbers: 47
+Total numbers: 100
 ```
 
 ### Clean the project

@@ -1,4 +1,4 @@
-# Exercise 1: Handling SIGINT Signal
+## Exercise 1: Handling SIGINT Signal
 
 ## Description
 Write a C program to catch the **SIGINT** signal (sent when pressing `Ctrl+C`) and print a message when the signal is received.
@@ -17,7 +17,7 @@ Write a C program to catch the **SIGINT** signal (sent when pressing `Ctrl+C`) a
 
 **ANSWERS:**
 - If no handler is registered, the default behavior of the operating system when receiving a **SIGINT** signal is to **terminate the program immediately**.
-- If the handler is set to SIG_IGN, the progrsam will completely ignore the SIGINT signal and continue running normally when `Ctrl+C` is pressed, making it impossible to stop the program using the usual shortcut.
+- If the handler is set to SIG_IGN, the program will completely ignore the SIGINT signal and continue running normally when `Ctrl+C` is pressed, making it impossible to stop the program using the usual shortcut.
 
 ---
 
@@ -25,12 +25,12 @@ Write a C program to catch the **SIGINT** signal (sent when pressing `Ctrl+C`) a
 ```
 project/
 ├── bin/         
-│   └── exam
-├── Makefile   
+│   └── exam                # Executable binary file
+├── Makefile                # Build automation script
 ├── obj/         
-│   └── main.o
+│   └── main.o              # Compiled object file
 └── src/         
-    └── main.c
+    └── main.c              # Source code implementing signal handling
 ```
 
 ---
