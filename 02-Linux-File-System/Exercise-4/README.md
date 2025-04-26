@@ -3,26 +3,28 @@
 This program creates a file, writes some data into it, and retrieves information about the file using `struct stat` in C.
 
 ## Features
-- Creates a file named
+- Creates a file named "test.txt" in the "file" directory
 - Writes a sample text into the file
 - Retrieves file details including:
   - File type
   - File name
   - Last modified time
   - File size
+  - I-node number
+  - Access and modification timestamps
 - Displays the retrieved information on the screen
 
 ## Project Structure
 ```
 ├── bin
-│   └── exam                      
+│   └── exam                # Executable binary file
 ├── file
-│   └── test.txt            
-├── Makefile                
+│   └── test.txt            # Generated text file for demonstration
+├── Makefile                # Build automation script
 ├── obj
-│   └── main.o             
+│   └── main.o              # Compiled object file
 └── src
-    └── main.c             
+    └── main.c              # Source code implementing file operations
 ```
 
 ## Compilation and Execution
@@ -54,4 +56,9 @@ Last file modification: Thu Mar  6 00:20:50 2025
 File Type: Regular file
 ```
 
-
+## Technical Details
+The program demonstrates several key file-related system calls:
+- `open()`: Creates and opens a file with specified permissions
+- `write()`: Writes data to the file
+- `stat()`: Retrieves file metadata including timestamps and type
+- `close()`: Properly closes the file descriptor

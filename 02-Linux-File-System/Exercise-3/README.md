@@ -41,7 +41,7 @@ $ make
 
 #### Writing to a file
 ```bash
-$ ./bin/example_program file/linux.txt 11 w "Hello Linux"
+$ ./bin/example_program linux.txt 11 w "Hello Linux"
 ```
 Expected output:
 ```
@@ -50,7 +50,7 @@ Written 11 to file: Hello Linux
 
 #### Reading from a file
 ```bash
-$ ./bin/example_program file/linux.txt 11 r
+$ ./bin/example_program linux.txt 11 r
 ```
 #### Expected output:
 ```

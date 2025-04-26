@@ -1,19 +1,28 @@
-#include "calc_advance.h"
+/**
+ * @file calc_advance.c
+ * @brief Implementation of advanced calculation operations
+ */
 
-int power(int base, int exp){
-    int ret = 1;
-    
-    for(int i = 0; i < exp; i++){
-        ret *= base;
-    }
-    
-    return ret;
-}
+ #include "calc_advance.h"
 
-long long factorial(int n){
-    if(n == 0 || n == 1){
-        return 1;
-    }
-    
-    return n * factorial(n - 1);
-}
+ // Implementation of power function using iteration
+ int power(int base, int exp) {
+     int result = 1;
+     
+     for (int i = 0; i < exp; i++) {
+         result *= base;
+     }
+     
+     return result;
+ }
+ 
+ // Implementation of factorial function using recursion
+ long long factorial(int n) {
+     // Base cases: 0! = 1 and 1! = 1
+     if (n == 0 || n == 1) {
+         return 1;
+     }
+     
+     // Recursive case: n! = n * (n-1)!
+     return n * factorial(n - 1);
+ }
