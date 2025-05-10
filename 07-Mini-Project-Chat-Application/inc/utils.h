@@ -1,19 +1,59 @@
-#ifndef UTILS_H
-#define UTILS_H
-
-#include <pthread.h>
-#include <stdbool.h>
-
 /**
- * Function Declarations for Utility Functions
-*/
-void print_error(const char *message);                  // Print an error message to stderr
-void signal_handler();                                  // Signal handler for shutting down the program on signals like SIGINT
-bool get_my_ip(char *ip_buffer, size_t buffer_len);     // Get the current device's IP address
-void print_my_ip(char *ip_buffer);                      // Display the current device's IP address
-void print_my_port(int port);                           // Display the current device's listening port
-void clear_input_buffer();                              // Clear the input buffer to avoid issues with fgets
-bool is_valid_ip(const char *ip);                       // Validate if a string is a valid IP address
-void cleanup_resources();                                // Clean up all resources before exiting
+ * utils.h - Utility functions for the chat application
+ * 
+ * Provides common utility functions used throughout the application.
+ */
 
-#endif
+ #ifndef UTILS_H
+ #define UTILS_H
+ 
+ #include <stdbool.h>
+ 
+ /**
+  * Print an error message to stderr
+  * 
+  * @param message Error message
+  */
+ void print_error(const char *message);
+ 
+ /**
+  * Signal handler for SIGINT (Ctrl+C)
+  * 
+  * @param sig Signal number
+  */
+ void handle_signal(int sig);
+ 
+ /**
+  * Get the local IP address (not loopback)
+  * 
+  * @param buffer Buffer to store the IP address
+  * @param buffer_size Size of the buffer
+  * @return true if successful, false otherwise
+  */
+ bool get_local_ip(char *buffer, int buffer_size);
+ 
+ /**
+  * Check if an IP address is valid
+  * 
+  * @param ip IP address string
+  * @return true if valid, false otherwise
+  */
+ bool is_valid_ip(const char *ip);
+ 
+ /**
+  * Clean up resources before exiting
+  */
+ void cleanup_resources(void);
+ 
+ /**
+  * Check if two IP addresses and ports are the same
+  * 
+  * @param ip1 First IP address
+  * @param port1 First port
+  * @param ip2 Second IP address
+  * @param port2 Second port
+  * @return true if they match, false otherwise
+  */
+ bool is_same_address(const char *ip1, int port1, const char *ip2, int port2);
+ 
+ #endif /* UTILS_H */

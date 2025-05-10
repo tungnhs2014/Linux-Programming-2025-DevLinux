@@ -1,174 +1,177 @@
-# Chat Application
+## Chat Application
 
-## Overview
-This is a command-line chat application that enables peer-to-peer messaging through TCP connections. The application allows users to establish, manage, and terminate connections with multiple peers simultaneously while exchanging real-time messages.
+A peer-to-peer chat application with command-line interface for remote messaging over TCP/IP.
 
-## Features
-- Peer-to-peer TCP socket communication
-- Support for both outgoing and incoming connections
-- Concurrent handling of multiple connections using threads
-- Real-time message exchange
-- Simple command-line interface
-- Clean resource handling and memory management
+### Overview
 
-## Project Structure
+This application enables direct messaging between peers through TCP connections. It serves as both client and server, allowing users to initiate connections to other peers and accept incoming connections simultaneously.
+
+### Features
+
+- Command-line interface for easy interaction
+- Connect to multiple peers simultaneously
+- Exchange messages in real-time
+- Terminate connections gracefully
+- Thread-safe connection management
+- Clean resource handling to prevent memory leaks
+
+### Project Structure
+
 ```
 .
-├── bin                 # Binary executables
-│   └── chat_app        # Main application executable
-├── inc                 # Header files
-│   ├── command.h       # Command processing definitions
-│   ├── connection.h    # Network connection handling
-│   ├── message.h       # Message structure and functions
-│   └── utils.h         # Utility functions
-├── log                 # Log files
-│   └── valgrind.log    # Memory leak check logs
-├── Makefile            # Build configuration
-├── obj                 # Compiled object files
-├── README.md           # This file
-└── src                 # Source code
-    ├── chat.c          # Main application entry point
-    ├── command.c       # Command processing implementation
-    ├── connection.c    # Connection management implementation
-    ├── message.c       # Message handling implementation
-    └── utils.c         # Utility functions implementation
+├── bin/            # Binary executables
+├── inc/            # Header files
+│   ├── command.h   # Command processing definitions
+│   ├── connection.h# Connection management
+│   ├── message.h   # Message handling
+│   └── utils.h     # Utility functions
+├── log/            # Log files
+├── obj/            # Compiled object files
+├── src/            # Source code
+│   ├── main.c      # Main application entry
+│   ├── command.c   # Command processing
+│   ├── connection.c# Connection handling
+│   ├── message.c   # Message functions
+│   └── utils.c     # Utility functions
+├── Makefile        # Build configuration
+└── README.md       # This file
 ```
 
-## Command List
-The application supports the following commands:
+### Building
 
-| Command | Description |
-|---------|-------------|
-| `help` | Display all available commands |
-| `myip` | Display IP address of this device |
-| `myport` | Display port on which this device is listening |
-| `connect <ip> <port>` | Connect to a remote device at the specified IP and port |
-| `list` | Display all active connections |
-| `send <id> <message>` | Send a message to the device with the specified ID |
-| `terminate <id>` | Disconnect from the device with the specified ID |
-| `exit` | Close all connections and exit the application |
+To build the application, use the provided Makefile:
 
-## Implementation Details
-
-### Connection Management
-- Each connection is tracked in either `device_connect_to` (outgoing) or `device_connect_from` (incoming) arrays
-- Connections are managed using thread-safe operations with mutex locks
-- Each connection has a dedicated thread for receiving messages
-
-### Thread Management
-- All created threads are detached to avoid resource leaks
-- Thread safety is ensured using mutex for critical sections
-- Signal handling for clean program termination
-
-### Message Handling
-- Messages can be sent to both outgoing and incoming connections
-- Real-time display of received messages
-- Support for messages up to 100 characters in length
-
-## Building and Running
-
-### Building the Application
-Use the provided Makefile to build the application:
 ```bash
 make
 ```
 
-### Running the Application
-Run the application with a port number as an argument:
+This will create the executable file at `bin/chat`.
+
+### Running
+
+To run the application, provide a port number as a command-line argument:
+
 ```bash
-./bin/chat_app <port>
+./bin/chat <port>
 ```
+
 Example:
 ```bash
-./bin/chat_app 8080
+./bin/chat 8000
 ```
 
-### Memory Leak Testing
-To check for memory leaks using Valgrind:
-```bash
-make valgrind-check
+This starts the application and listens for incoming connections on port 8000.
+
+### Commands
+
+The application supports the following commands:
+
+- `help` - Display all available commands
+- `myip` - Display your IP address
+- `myport` - Display your port number
+- `connect <ip> <port>` - Connect to a peer
+- `list` - List all active connections
+- `terminate <id>` - Terminate a connection
+- `send <id> <message>` - Send a message to a peer
+- `exit` - Exit the application
+
+### Example Usage
+
+#### Starting the Application
 ```
+$ ./bin/chat 8000
+Chat application started on port 8000
 
-To save the Valgrind output to a log file:
-```bash
-make valgrind-log
-```
-
-## Example Usage
-
-### Starting the Application
-```bash
-$ ./bin/chat_app 8080
-Listening on port: 8080
-************************Command List*************************
+-------- Command List --------
 help                         : Display all commands
-myip                         : Display IP of this device
-myport                       : Display port of this device
-connect <ip> <port_num>      : Connect to device with IP and port
-list                         : Display all connected devices
-send <id> <message>          : Send message to device with id
-terminate <id>               : Disconnect with device at id
-exit                         : Close application
-************************************************************
+myip                         : Display your IP address
+myport                       : Display your port number
+connect <ip> <port>          : Connect to a peer
+list                         : List all active connections
+terminate <id>               : Terminate a connection
+send <id> <message>          : Send a message to a peer
+exit                         : Exit the application
+-----------------------------
+
+Enter command: 
 ```
 
-### Checking Your IP and Port
-```bash
+#### Checking Your IP and Port
+```
 Enter command: myip
-My IP is: 192.168.1.5
+Your IP address: 192.168.1.5
 Enter command: myport
-My port is: 8080
+Your port: 8000
 ```
 
-### Connecting to Another Device
-```bash
-Enter command: connect 192.168.1.10 9000
-Connected to IP: 192.168.1.10, Port: 9000
+#### Connecting to a Peer
+```
+Enter command: connect 192.168.1.10 8001
+Connected to 192.168.1.10:8001
 ```
 
-### Listing All Connections
-```bash
+#### Listing Connections
+```
 Enter command: list
 
-****************** Device Connections *******************
-ID |        IP Address         | Port No.
---------------------------------------------------------
-0  | 192.168.1.10              | 9000
-100| 192.168.1.15              | 45678 (incoming)
-********************************************************
+-------- Connection List --------
+ID  |  IP Address        |  Port  |  Type
+----------------------------------------
+0   |  192.168.1.10      |  8001  |  Outgoing
+1   |  192.168.1.15      |  8002  |  Incoming
+----------------------------------------
+Total: 2 connection(s)
 ```
 
-### Sending a Message
-```bash
-Enter command: send 0 Hello, how are you today?
-Message sent to device with ID: 0
+#### Sending a Message
+```
+Enter command: send 0 Hello, how are you?
+Message sent to connection 0.
 ```
 
-### Receiving a Message
+#### Receiving a Message
 ```
 ***Message received from: 192.168.1.10
-***Sender Port:          45678
+***Sender Port:          8001
 -->Message:              Hi there! I'm doing well, thanks for asking.
 
 Enter command: 
 ```
 
-### Terminating a Connection
-```bash
+#### Terminating a Connection
+```
 Enter command: terminate 0
-Connection with ID 0 terminated successfully.
+Connection 0 terminated successfully.
 ```
 
-### Exiting the Application
-```bash
+#### Exiting the Application
+```
 Enter command: exit
 Exiting application...
 Cleaning up resources...
 All resources cleaned up.
 ```
 
-## Cleaning up
-To remove all object files and executables:
+### Memory Leak Testing
+
+To check for memory leaks using Valgrind:
+
+```bash
+make valgrind
+```
+
+### Cleaning Up
+
+To remove compiled files:
+
 ```bash
 make clean
 ```
+
+## Implementation Notes
+
+- The application uses POSIX threads for handling multiple connections
+- Each connection has a dedicated thread for receiving messages
+- Thread safety is ensured using mutex locks for critical sections
+- All threads are detached to avoid resource leaks
+- Signals (SIGINT) are handled for clean program termination

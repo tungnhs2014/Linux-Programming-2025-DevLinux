@@ -1,282 +1,151 @@
-#include "command.h"
-#include "connection.h"
-#include "message.h"
-#include "utils.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <pthread.h>
-
-/* External variables from other modules */
-extern device this_device;
-extern device device_connect_to[MAX_CLIENT];
-extern device device_connect_from[MAX_CLIENT];
-extern int total_device_to;
-extern int total_device_from;
-extern pthread_mutex_t device_list_mutex;
-
 /**
- * Get numeric code for command based on the user input
- * 
- * @param command The command string entered by user
- * @return Command code enum value
+ * command.c - Command processing implementation
  */
-Command get_command_code(const char *command) {
-    // Validate input
-    if (!command || !*command) return CMD_INVALID;
-    
-    // Match command string to enum value
-    if (!strcmp(command, "help")) return CMD_HELP;
-    if (!strcmp(command, "myip")) return CMD_MYIP;
-    if (!strcmp(command, "myport")) return CMD_MYPORT;
-    if (!strcmp(command, "connect")) return CMD_CONNECT;
-    if (!strcmp(command, "list")) return CMD_LIST;
-    if (!strcmp(command, "terminate")) return CMD_TERMINATE;
-    if (!strcmp(command, "send")) return CMD_SEND;
-    if (!strcmp(command, "exit")) return CMD_EXIT;
-    return CMD_INVALID; // Return invalid if no match found
-}
 
-/**
- * Print the list of available commands
- * Shows all supported commands with descriptions
- */
-void print_command_list() {
-    printf("************************Command List*************************\n");
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include "command.h"
+ #include "connection.h"
+ #include "message.h"
+ #include "utils.h"
+
+ // Command strings matching the command_t enum
+ static const char *COMMAND_STRINGS[] = {
+    "help",
+    "myip",
+    "myport",
+    "connect",
+    "list",
+    "terminate",
+    "send",
+    "exit"
+ };
+
+ command_t parse_command(const char *cmd) {
+    if (!cmd) {
+        return CMD_UNKNOWN;
+    }
+
+    // Compare with known commands
+    for (int i = 0; i <= CMD_EXIT; i++) {
+        if (strcmp(cmd, COMMAND_STRINGS[i]) == 0) {
+            return (command_t)i;
+        }
+    }
+
+    return CMD_UNKNOWN;
+ }
+
+ void display_help(void) {
+    printf("\n-------- Command List --------\n");
     printf("help                         : Display all commands\n");
-    printf("myip                         : Display IP of this device\n");
-    printf("myport                       : Display port of this device\n");
-    printf("connect <ip> <port_num>      : Connect to device with IP and port\n");
-    printf("list                         : Display all connected devices\n");
-    printf("send <id> <message>          : Send message to device with id\n");
-    printf("terminate <id>               : Disconnect with device at id\n");
-    printf("exit                         : Close application\n");
-    printf("************************************************************\n");
-}
+    printf("myip                         : Display your IP address\n");
+    printf("myport                       : Display your port number\n");
+    printf("connect <ip> <port>          : Connect to a peer\n");
+    printf("list                         : List all active connections\n");
+    printf("terminate <id>               : Terminate a connection\n");
+    printf("send <id> <message>          : Send a message to a peer\n");
+    printf("exit                         : Exit the application\n");
+    printf("-----------------------------\n");
+ }
 
-/**
- * Process a command entered by the user
- * 
- * @param command_line Full command line entered by user
- */
-void process_command(char *command_line) {
-    // Validate input
-    if (!command_line || !*command_line) return;
-
-    // Extract command from input line
-    char command_option[20] = {0};
-    int result = sscanf(command_line, "%19s", command_option);
-    if (result != 1) {
-        printf("Invalid command format.\n");
+ void process_command(char *command_line) {
+    if (!command_line || strlen(command_line) == 0) {
         return;
     }
 
-    // Process command based on its type
-    switch(get_command_code(command_option)) {
-        case CMD_HELP: 
-            // Display available commands
-            print_command_list(); 
+    // Remove tralling newline if present
+    size_t len = strlen(command_line);
+    if (command_line[len - 1] == '\n') {
+        command_line[len - 1] = '\0';
+    }
+
+    // Extract command
+    char command[20];
+    if (sscanf(command_line, "%19s", command) != 1) {
+        return;
+    }
+
+    // Parse command and execute
+    switch (parse_command(command)) {
+        case CMD_HELP:
+            display_help();
             break;
-            
-        case CMD_MYIP: 
-            // Display this device's IP address
-            print_my_ip(this_device.my_ip); 
-            break;
-            
-        case CMD_MYPORT: 
-            // Display this device's port number
-            print_my_port(this_device.port_num); 
-            break;
-            
-        case CMD_CONNECT: {
-            // Parse IP and port from command
-            char ip[IP_LEN] = {0};
-            int port;
-            if (sscanf(command_line, "%*s %49s %d", ip, &port) < 2) {
-                print_error("Invalid input: Usage: connect <ip> <port>");
-                break;
-            }
-            
-            // Validate IP address format
-            if (!is_valid_ip(ip)) {
-                print_error("Invalid IP address format");
-                break;
-            }
-            
-            // Check if port is in valid range
-            if (port <= 0 || port > 65535) {
-                print_error("Invalid port number. Port must be between 1 and 65535");
-                break;
-            }
-            
-            // Check for self-connection attempt
-            if (strcmp(ip, this_device.my_ip) == 0 && port == this_device.port_num) {
-                print_error("Self-connection is not allowed");
-                break;
-            }
-            
-            // Check for duplicate connections and find available slot
-            bool duplicate = false;
-            int idx = -1;
-            
-            pthread_mutex_lock(&device_list_mutex);
-            
-            // Check for duplicates
-            for (int i = 0; i < MAX_CLIENT; i++) {
-                if (device_connect_to[i].is_active && 
-                    strcmp(device_connect_to[i].my_ip, ip) == 0 && 
-                    device_connect_to[i].port_num == port) {
-                    duplicate = true;
-                    break;
-                }
-            }
-            
-            // If not duplicate, find available slot
-            if (!duplicate) {
-                for (int i = 0; i < MAX_CLIENT; i++) {
-                    if (!device_connect_to[i].is_active) {
-                        idx = i;
-                        break;
-                    }
-                }
-            }
-            
-            pthread_mutex_unlock(&device_list_mutex);
-            
-            // Handle errors
-            if (duplicate) {
-                print_error("Duplicate connection is not allowed");
-                break;
-            }
-            
-            if (idx == -1) {
-                print_error("Maximum connections reached");
-                break;
-            }
-            
-            // Connect to the device
-            if (connect_to_device(&device_connect_to[idx], ip, port, idx) == 0) {
-                pthread_mutex_lock(&device_list_mutex);
-                device_connect_to[idx].is_active = true;
-                total_device_to++;
-                pthread_mutex_unlock(&device_list_mutex);
-            }
-            break;
-        }
         
-        case CMD_LIST: 
-            // Display list of connected devices
-            print_device_list(); 
-            break;
-            
-        case CMD_SEND: {
-            // Parse message parameters
-            char message[MAX_MESSAGE_LEN + 1] = {0};
-            int id;
-            if (sscanf(command_line, "%*s %d %100[^\n]", &id, message) < 2) {
-                print_error("Invalid input. Usage: send <id> <message>");
-                break;
+        case CMD_MYIP: {
+            char ip[IP_LENGTH];
+            if (get_local_ip(ip, IP_LENGTH)) {
+                printf("Your IP adderess: %s\n", ip);
             }
-            
-            // Check message length
-            if (strlen(message) > MAX_MESSAGE_LEN) {
-                print_error("Message too long. Maximum message length is 100 characters");
-                break;
-            }
-            
-            // Find the device with the specified ID
-            device *target_device = NULL;
-            
-            pthread_mutex_lock(&device_list_mutex);
-            
-            if (id >= MAX_CLIENT) {
-                // Handle incoming connections (device_connect_from)
-                int idx = id - MAX_CLIENT;
-                if (idx >= 0 && idx < MAX_CLIENT && device_connect_from[idx].is_active) {
-                    target_device = &device_connect_from[idx];
-                }
-            } else {
-                // Handle outgoing connections (device_connect_to)
-                for (int i = 0; i < MAX_CLIENT; i++) {
-                    if (device_connect_to[i].is_active && device_connect_to[i].id == id) {
-                        target_device = &device_connect_to[i];
-                        break;
-                    }
-                }
-            }
-            
-            pthread_mutex_unlock(&device_list_mutex);
-            
-            if (!target_device) {
-                printf("ERROR: Device with ID %d not found or not active.\n", id);
-                break;
-            }
-            
-            // Send message
-            if(send_message(target_device, message)) {
-                printf("Message sent to device with ID: %d\n", id);
-            } else {
-                print_error("Failed to send message");
+            else {
+                print_error("Could not determine IP address");
             }
             break;
         }
+
+        case CMD_MYPORT:
+            printf("Your port: %d\n", get_listening_port());
+            break;
+        
+        case CMD_CONNECT: {
+            char ip[IP_LENGTH];
+            int port;
+
+            // Parse IP and port
+            if (sscanf(command_line, "%*s %15s %d", ip, &port) != 2) {
+                print_error("Invalid format. Usage: connect <ip> <port>");
+                break;    
+            }
+
+            connect_to_peer(ip, port);
+            break;
+        }
+
+        case CMD_LIST:
+            list_connections();
+            break;
         
         case CMD_TERMINATE: {
-            // Parse connection ID to terminate
-            int id; 
-            if (sscanf(command_line, "%*s %d", &id) < 1) {
-                print_error("Invalid input. Usage: terminate <id>");
+            int id;
+            
+            // Parse connection ID
+            if (sscanf(command_line, "*s %d", &id) != 1) {
+                print_error("Invalid format. Usage: terminate <id>");
                 break;
             }
             
-            // Find the device with the specified ID
-            device *target_device = NULL;
-            
-            pthread_mutex_lock(&device_list_mutex);
-            
-            if (id >= MAX_CLIENT) {
-                // Handle incoming connections (device_connect_from)
-                int idx = id - MAX_CLIENT;
-                if (idx >= 0 && idx < MAX_CLIENT && device_connect_from[idx].is_active) {
-                    target_device = &device_connect_from[idx];
-                }
-            } else {
-                // Handle outgoing connections (device_connect_to)
-                for (int i = 0; i < MAX_CLIENT; i++) {
-                    if (device_connect_to[i].is_active && device_connect_to[i].id == id) {
-                        target_device = &device_connect_to[i];
-                        break;
-                    }
-                }
-            }
-            
-            pthread_mutex_unlock(&device_list_mutex);
-            
-            if (!target_device) {
-                printf("ERROR: Device with ID %d not found or already disconnected.\n", id);
-                break;
-            }
-            
-            // Terminate the connection
-            if(disconnect_device(target_device) == 0) {
-                printf("Connection with ID %d terminated successfully.\n", id);
-            } else {
-                print_error("Failed to disconnect device");
+            if (terminate_connection(id) == 0) {
+                printf("Connection %d terminated successfully.\n", id);
             }
             break;
         }
-        
-        case CMD_EXIT: {
-            // Exit the application
+
+        case CMD_SEND: {
+            int id;
+            char message[MAX_MESSAGE_LENGTH];
+
+            // Parse ID and extract message portion
+            if (sscanf(command_line, "%*s %d %100[^\n]", &id, message) != 2) {
+                print_error("Invalid format. Usage: send <id> <message>");
+                break;
+            }
+
+            if (send_message(id, message) == 0) {
+                printf("Message sent to connection %d.\n", id);
+            }
+            break;
+        }
+
+        case CMD_EXIT:
             printf("Exiting application...\n");
             cleanup_resources();
             exit(EXIT_SUCCESS);
             break;
-        }
-        
-        default: 
-            // Handle invalid command
-            printf("Invalid command. Type 'help' for a list of available commands.\n"); 
+        case CMD_UNKNOWN:
+        default:
+            printf("Unknown command. Type 'help' for available commands.\n");
             break;
     }
-}
+
+ }

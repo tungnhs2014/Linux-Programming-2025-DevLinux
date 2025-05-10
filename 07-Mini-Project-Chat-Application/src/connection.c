@@ -1,332 +1,434 @@
-#include "connection.h"
-#include "message.h"
-#include "utils.h"
-#include <pthread.h>
-#include <errno.h>
-
-/* External global variables */
-extern device this_device;
-extern device device_connect_to[MAX_CLIENT];
-extern device device_connect_from[MAX_CLIENT];
-extern int total_device_to;
-extern int total_device_from;
-extern pthread_mutex_t device_list_mutex;
-
 /**
- * Initialize the socket for the current device
- * Creates a socket, sets options, binds to port, and starts listening
- * 
- * @param dev Pointer to device structure to initialize
- * @param port Port number to bind to
- * @return 0 on success, -1 on failure
+ * connection.c - Connection management implementation
  */
-int initialize_socket(device *dev, int port) {
-    // Validate input
-    if (!dev) return -1;
-    
-    // Create a TCP socket
-    dev->fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (dev->fd == -1) {
+
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+ #include <sys/socket.h>
+ #include <arpa/inet.h>
+ #include <netinet/in.h>
+ #include <pthread.h>
+ #include <errno.h>
+ #include "connection.h"
+ #include "message.h"
+ #include "utils.h"
+
+ // Array of connections - both outgoing and incoming
+ static connection_t connections[MAX_CONNECTIONS] = {0};
+
+ // Sever information
+ static int server_socket = -1;
+ static int server_port = -1;
+ static char server_ip[IP_LENGTH] = {0};
+
+ // Thread for accepting incomming connections
+ static pthread_t listener_thread;
+ 
+ // Mutex for thread safety when accessing connection array
+ static pthread_mutex_t conn_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+ // Next available connection ID
+ static int next_conn_id = 0;
+
+ // Connection counters
+ static int active_connections = 0;
+
+ // Local function prototypes
+ static void* connection_listener(void* arg);
+ static int find_free_slot(void);
+ static int check_duplicate_connection(const char* ip, int port);
+
+ int initialize_server(int port) {
+    // Create socket
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket < 0) {
         print_error("Socket creation failed");
         return -1;
     }
 
-    // Set socket options to allow reusing the address
-    // This helps avoid "Address already in use" errors when restarting
+    struct sockaddr_in server_addr;
     int opt = 1;
-    if (setsockopt(dev->fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+    // Set socket options
+    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         print_error("setsockopt failed");
-        close(dev->fd);
+        close(server_socket);
+        server_socket = -1;
         return -1;
     }
 
-    // Configure device address with the specified port
-    dev->port_num = port;
-    dev->addr.sin_family = AF_INET;
-    dev->addr.sin_addr.s_addr = INADDR_ANY;  // Accept connections on any interface
-    dev->addr.sin_port = htons(dev->port_num);  // Convert to network byte order
-    dev->is_active = true;
+    // Prepare server address
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(port);
 
-    // Bind the socket to the device address
-    if (bind(dev->fd, (struct sockaddr*)&dev->addr, sizeof(dev->addr)) == -1) {
+    // Bind socket to address
+    if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         print_error("Bind failed");
-        close(dev->fd);
+        close(server_socket);
+        server_socket = -1;
         return -1;
     }
-
-    // Start listening for incoming connections
-    if (listen(dev->fd, MAX_SERVER) == -1) {
+    
+    // Start listening
+    if (listen(server_socket, 5) < 0) {
         print_error("Listen failed");
-        close(dev->fd);
+        close(server_socket);
+        server_socket = -1;
         return -1;
     }
+    
+    // Store server port
+    server_port = port;
 
-    printf("Listening on port: %d\n", dev->port_num);
+    // Get and store server IP
+    if (!get_local_ip(server_ip, IP_LENGTH)) {
+        strcpy(server_ip, "127.0.0.1");
+    }
+
+    // Initialize connection array
+    for (int i = 0; i < MAX_CONNECTIONS; i++) {
+        connections[i].socket = -1;
+        connections[i].is_active = false;
+    }
+
     return 0;
-}
+ }
 
-/**
- * Thread handler for accepting incoming connections
- * 
- * @param args Thread arguments (not used)
- * @return NULL when thread exits
- */
-void *accept_connection_handler(void *args) {
+ int get_listening_port(void) {
+    return server_port;
+ }
+ 
+ int get_server_socket(void) {
+    return server_socket;
+ }
+
+ int start_connection_listener(void) {
+    if (pthread_create(&listener_thread, NULL, connection_listener, NULL) != 0) {
+        print_error("Failed to create listener thread");
+        return -1;
+    }
+    
+    // Detach thread so we don't need to join it later
+    pthread_detach(listener_thread);
+    
+    return 0;
+ }
+
+ static void* connection_listener(void* arg) {
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
+    int client_socket;
 
     while (1) {
-        // Accept new incoming connection
-        int client_fd = accept(this_device.fd, (struct sockaddr *)&client_addr, &client_len);
-        if (client_fd == -1) {
-            if (errno == EINTR) {
-                // Interrupted by signal, just continue
-                continue;
+        // Accept new conncection
+        client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_len);
+
+        // Check if server socket was closed
+        if (server_socket < 0) {
+            break;
+        }
+
+        // Check for accept errors
+        if (client_socket < 0) {
+            if (errno != EINTR) {// Ignore if interrupted by signal
+                print_error("Accept faield");
             }
-            print_error("Accept new device failed");
             continue;
         }
 
-        // Find an available slot and create device info
-        int idx = -1;
-        device* new_device = NULL;
-        
-        pthread_mutex_lock(&device_list_mutex);
-        
-        // Find available slot
-        for (int i = 0; i < MAX_CLIENT; i++) {
-            if (!device_connect_from[i].is_active) {
-                idx = i;
-                break;
-            }
-        }
-        
-        if (idx == -1) {
-            // No space for new connection
-            pthread_mutex_unlock(&device_list_mutex);
-            close(client_fd);
-            print_error("Maximum incoming connections reached");
+        // Find a free slot for the new connection
+        pthread_mutex_lock(&conn_mutex);
+        int slot = find_free_slot();
+
+        if (slot < 0) {
+            pthread_mutex_unlock(&conn_mutex);
+            print_error("Maximum connections reached");
+            close(client_socket);
             continue;
         }
 
-        // Save the connection information
-        device_connect_from[idx].fd = client_fd;
-        device_connect_from[idx].id = idx;
-        device_connect_from[idx].addr = client_addr;
-        device_connect_from[idx].port_num = ntohs(client_addr.sin_port);
-        device_connect_from[idx].is_active = true;
-        
-        // Convert IP address to string
-        inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, 
-                 device_connect_from[idx].my_ip, IP_LEN);
-        
-        // Create a copy of device for thread parameter
-        new_device = malloc(sizeof(device));
-        if (!new_device) {
-            device_connect_from[idx].is_active = false;
-            pthread_mutex_unlock(&device_list_mutex);
-            close(client_fd);
+        // Initialize connection structure
+        connections[slot].socket = client_socket;
+        connections[slot].id = next_conn_id++;
+        connections[slot].port = ntohs(client_addr.sin_port);
+        connections[slot].addr = client_addr;
+        connections[slot].is_active = true;
+        connections[slot].is_incoming = true;
+
+        // Covert IP address to string
+        inet_ntop(AF_INET, &client_addr.sin_addr, connections[slot].ip, IP_LENGTH);
+
+        active_connections++;
+        pthread_mutex_unlock(&conn_mutex);
+
+        printf("\nNew connection from %s:%d\n", connections[slot].ip, connections[slot].port);
+        printf("Enter command: ");
+        fflush(stdout);
+
+        // Create a new thread to handle message from this connection
+        connection_t *conn_copy = malloc(sizeof(connection_t));
+        if (!conn_copy) {
             print_error("Memory allocation failed");
+            pthread_mutex_lock(&conn_mutex);
+            connections[slot].is_active = false;
+            connections[slot].socket = -1;
+            active_connections--;
+            pthread_mutex_unlock(&conn_mutex);
+            close(client_socket);
             continue;
         }
         
-        // Copy device data and update counter
-        memcpy(new_device, &device_connect_from[idx], sizeof(device));
-        total_device_from++;
+        // Copy connection data to avoid race conditions
+        memcpy(conn_copy, &connections[slot], sizeof(connection_t));
         
-        pthread_mutex_unlock(&device_list_mutex);
+        // Create thread for receiving messages
+        if (pthread_create(&connections[slot].thread, NULL, receive_message_handler, conn_copy) != 0) {
+            print_error("Failed to create receive thread");
+            free(conn_copy);
+            pthread_mutex_lock(&conn_mutex);
+            connections[slot].is_active = false;
+            connections[slot].socket = -1;
+            active_connections--;
+            pthread_mutex_unlock(&conn_mutex);
+            close(client_socket);
+            continue;
+        }
 
-        // Create a thread to handle receiving messages
-        pthread_t recv_thread;
-        if (pthread_create(&recv_thread, NULL, receive_message_handler, new_device)) {
-            print_error("Cannot create thread to receive message");
-            free(new_device);
-            
-            pthread_mutex_lock(&device_list_mutex);
-            device_connect_from[idx].is_active = false;
-            total_device_from--;
-            pthread_mutex_unlock(&device_list_mutex);
-            
-            close(client_fd);
-            continue;
-        }
-        
-        // Store thread ID and detach it
-        device_connect_from[idx].recv_thread = recv_thread;
-        pthread_detach(recv_thread);
-        
-        printf("New connection accepted from %s:%d\n", 
-               device_connect_from[idx].my_ip, 
-               device_connect_from[idx].port_num);
+        // Detach thread
+        pthread_detach(connections[slot].thread);
     }
     
     return NULL;
-}
+ }
 
-/**
- * Print the list of devices connected
- * Displays all active connections (both outgoing and incoming)
- */
-void print_device_list() {
-    pthread_mutex_lock(&device_list_mutex);
-
-    printf("\n****************** Device Connections *******************\n");
-    printf("ID |        IP Address         | Port No.\n");
-    printf("--------------------------------------------------------\n");
-
-    // Print outgoing connections (connections we initiated)
-    for (int i = 0; i < MAX_CLIENT; i++) {
-        if (device_connect_to[i].is_active && device_connect_to[i].fd > 0) {
-            printf("%-3d| %-25s | %-d\n", 
-                   device_connect_to[i].id, 
-                   device_connect_to[i].my_ip, 
-                   device_connect_to[i].port_num);
-        }
-    }
-
-    // Print incoming connections (connections others initiated to us)
-    for (int i = 0; i < MAX_CLIENT; i++) {
-        if (device_connect_from[i].is_active && device_connect_from[i].fd > 0) {
-            printf("%-3d| %-25s | %-d (incoming)\n", 
-                   device_connect_from[i].id + MAX_CLIENT, 
-                   device_connect_from[i].my_ip, 
-                   device_connect_from[i].port_num);
-        }
-    }
-    
-    printf("********************************************************\n\n");
-
-    pthread_mutex_unlock(&device_list_mutex);
-}
-
-/**
- * Connect to another device
- * Establishes a TCP connection to a remote peer
- * 
- * @param dev Device structure to store connection info
- * @param ip IP address to connect to
- * @param port Port to connect to
- * @param id ID to assign to this connection
- * @return 0 on success, -1 on failure
- */
-int connect_to_device(device *dev, const char *ip, int port, int id) {
-    // Validate input parameters
-    if (!dev || !ip) return -1;
-    
-    // Create a new socket for the connection
-    int new_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (new_fd == -1) {
-        print_error("Socket creation failed");
-        return -1;
-    }
-    
-    // Configure address structure
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    
-    // Convert IP from string to binary format
-    if (inet_pton(AF_INET, ip, &addr.sin_addr.s_addr) <= 0) {
+ int connect_to_peer(const char *ip, int port) {
+    // Validate IP and port
+    if (!is_valid_ip(ip)) {
         print_error("Invalid IP address");
-        close(new_fd);
         return -1;
     }
 
-    // Connect to the specified device
-    if (connect(new_fd, (struct sockaddr*)&addr, sizeof(addr)) == 0) {
-        // Successfully connected - update device structure
-        dev->fd = new_fd;
-        dev->id = id;
-        dev->port_num = port;
-        strncpy(dev->my_ip, ip, IP_LEN - 1);
-        dev->my_ip[IP_LEN - 1] = '\0';  // Ensure null termination
-        dev->addr = addr;
-        
-        printf("Connected to IP: %s, Port: %d\n", ip, port);
-        
-        // Create a thread to handle receiving messages
-        device* new_device = malloc(sizeof(device));
-        if (!new_device) {
-            print_error("Memory allocation failed");
-            close(new_fd);
-            return -1;
-        }
-        
-        // Copy device data to thread parameter
-        memcpy(new_device, dev, sizeof(device));
-        
-        // Create a thread to handle incoming messages from this device
-        pthread_t recv_thread;
-        if (pthread_create(&recv_thread, NULL, receive_message_handler, new_device)) {
-            print_error("Cannot create thread to receive message");
-            free(new_device);
-            close(new_fd);
-            return -1;
-        }
-        
-        // Store thread ID and detach it
-        dev->recv_thread = recv_thread;
-        pthread_detach(recv_thread);
-        
-        return 0;
-    } else {
+    if (port <= 0 || port > 65535) {
+        print_error("Invalid port number");
+        return -1;
+    }
+
+    // Check for self-connection
+    if (is_same_address(ip, port, server_ip, server_port)) {
+        print_error("Cannot connect to yourself");
+        return -1;
+    }
+
+    // Check for duplicate connection
+    pthread_mutex_lock(&conn_mutex);
+    int dup_idx = check_duplicate_connection(ip, port);
+    if (dup_idx >= 0) {
+        pthread_mutex_unlock(&conn_mutex);
+        print_error("Duplicate connection is not allowed");
+        return -1;
+    }
+
+    // Find a free slot for the new connection
+    int slot = find_free_slot();
+    if (slot < 0) {
+        pthread_mutex_unlock(&conn_mutex);
+        print_error("Maximum connection reached");
+        return -1;
+    }
+    pthread_mutex_unlock(&conn_mutex);
+
+    // Create socket
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        print_error("Socket creation faield");
+        return -1;
+    }
+
+    // Prepare peer addresss
+    struct sockaddr_in peer_addr;
+    peer_addr.sin_family = AF_INET;
+    peer_addr.sin_port = htons(port);
+
+    if (inet_pton(AF_INET, ip, &peer_addr.sin_addr) < 0) {
+        print_error("Invalid address");
+        close(sock);
+        return -1;
+    }
+
+    // Connect to peer
+    if (connect(sock, (struct sockaddr*)&peer_addr, sizeof(peer_addr)) < 0) {
         print_error("Connection failed");
-        close(new_fd);
+        close(sock);
         return -1;
     }
-}
 
-/**
- * Disconnect from a device and close the socket
- * 
- * @param dev Device to disconnect from
- * @return 0 on success, -1 on failure
- */
-int disconnect_device(device *dev) {
-    // Validate device is active
-    if (!dev || dev->fd < 0 || !dev->is_active) {
+    // Initalize connection structure
+    pthread_mutex_lock(&conn_mutex);
+    connections[slot].socket = sock;
+    connections[slot].id = next_conn_id++;
+    connections[slot].port = port;
+    connections[slot].addr = peer_addr;
+    connections[slot].is_active = true;
+    connections[slot].is_incoming = false;
+    strncpy(connections[slot].ip, ip, IP_LENGTH -1);
+    connections[slot].ip[IP_LENGTH - 1] = '\0';
+
+    active_connections++;
+    pthread_mutex_unlock(&conn_mutex);
+
+    printf("Connected to %s:%d\n", ip, port);
+
+    // Create a new thread to handle message from this connection
+    connection_t *conn_copy = malloc(sizeof(sizeof(connection_t)));
+    if (!conn_copy) {
+        print_error("Memory allocation failed");
+        pthread_mutex_lock(&conn_mutex);
+        connections[slot].is_active = false;
+        connections[slot].socket = -1;
+        active_connections--;
+        pthread_mutex_unlock(&conn_mutex);
+        close(sock);
         return -1;
     }
-    
-    // Prepare termination message
-    char message[100];
-    snprintf(message, sizeof(message), "The connection has been terminated by the remote peer");
-    
-    // Try to send termination message to notify the peer
-    send_message(dev, message);
-    
-    // Close the socket - this will cause the receive thread to exit
-    close(dev->fd);
-    dev->fd = -1;
-    dev->is_active = false;
-    
+
+    // Copy thread for receiving message
+    if (pthread_create(&connections[slot].thread, NULL, receive_message_handler, conn_copy) != 0) {
+        print_error("Failed to create receive thread");
+        free(conn_copy);
+        pthread_mutex_lock(&conn_mutex);
+        connections[slot].is_active = false;
+        connections[slot].socket = -1;
+        active_connections--;
+        pthread_mutex_unlock(&conn_mutex);
+        close(sock);
+        return -1;
+    }
+
+    // Detach thread
+    pthread_detach(connections[slot].thread);
+
     return 0;
-}
+ }
 
-/**
- * Disconnect all devices and close their sockets
- */
-void disconnect_all_devices() {
-    pthread_mutex_lock(&device_list_mutex);
+ int terminate_connection(int conn_id) {
+    connection_t* conn = find_connection_by_id(conn_id);
+
+    if (!conn) {
+        print_error("Connection not found!");
+        return -1;
+    }
+
+    // Send termination notification
+    char msg[MAX_MESSAGE_LENGTH];
+    snprintf(msg, MAX_MESSAGE_LENGTH, "Connection terminated by peer");
+
+    // Try to send
+    if (conn->socket >= 0) {
+        send(conn->socket, msg, strlen(msg), 0);
+    }
+
+    pthread_mutex_lock(&conn_mutex);
+    // Mark as inactive and close socket
+    if (conn->is_active) {
+        conn->is_active = false;
+
+        if (conn->socket >= 0) {
+            close(conn->socket);
+            conn->socket = -1;
+        }
+
+        active_connections--;
+    }
+    pthread_mutex_unlock(&conn_mutex);
+
+    return 0;
+ }
+ 
+ void list_connections(void) {
+    pthread_mutex_lock(&conn_mutex);
     
-    // Disconnect all outgoing connections
-    for (int i = 0; i < MAX_CLIENT; i++) {
-        if (device_connect_to[i].is_active && device_connect_to[i].fd > 0) {
-            // Just close and mark as inactive, don't send messages during shutdown
-            close(device_connect_to[i].fd);
-            device_connect_to[i].fd = -1;
-            device_connect_to[i].is_active = false;
+    printf("\n-------- Connection List --------\n");
+    printf("ID  |  IP Address        |  Port  |  Type\n");
+    printf("----------------------------------------\n");
+    
+    int count = 0;
+    for (int i = 0; i < MAX_CONNECTIONS; i++) {
+        if (connections[i].is_active) {
+            printf("%-4d|  %-18s|  %-6d|  %s\n", 
+                   connections[i].id, 
+                   connections[i].ip, 
+                   connections[i].port,
+                   connections[i].is_incoming ? "Incoming" : "Outgoing");
+            count++;
         }
     }
     
-    // Disconnect all incoming connections
-    for (int i = 0; i < MAX_CLIENT; i++) {
-        if (device_connect_from[i].is_active && device_connect_from[i].fd > 0) {
-            close(device_connect_from[i].fd);
-            device_connect_from[i].fd = -1;
-            device_connect_from[i].is_active = false;
-        }
+    if (count == 0) {
+        printf("No active connections\n");
     }
     
-    pthread_mutex_unlock(&device_list_mutex);
-}
+    printf("----------------------------------------\n");
+    printf("Total: %d connection(s)\n", count);
+    
+    pthread_mutex_unlock(&conn_mutex);
+ }
+
+ connection_t* find_connection_by_id(int conn_id) {
+    pthread_mutex_lock(&conn_mutex);
+
+    for (int i = 0; i < MAX_CONNECTIONS; i++) {
+        if (connections[i].is_active && connections[i].id == conn_id) {
+            pthread_mutex_unlock(&conn_mutex);
+            return &connections[i];
+        }
+    }
+
+    pthread_mutex_unlock(&conn_mutex);
+    return NULL;
+ }
+
+ void close_all_connections(void) {
+    // Stop accepting new connections
+    if (server_socket >= 0) {
+        close(server_socket);
+        server_socket = -1;
+    }
+
+    // Close all active connections
+    pthread_mutex_lock(&conn_mutex);
+
+    for (int i = 0; i < MAX_CONNECTIONS; i++) {
+        if (connections[i].is_active && connections[i].socket >= 0) {
+            close(connections[i].socket);
+            connections[i].socket = -1;
+            connections[i].is_active = false;
+        }
+    }
+
+    active_connections = 0;
+    pthread_mutex_unlock(&conn_mutex);
+    
+    // Destroy mutex
+    pthread_mutex_destroy(&conn_mutex);
+ }
+
+ static int find_free_slot(void) {
+    for (int i = 0; i < MAX_CONNECTIONS; i++) {
+        if (!connections[i].is_active) {
+            return i;
+        }
+    }
+    return -1;
+ }
+
+ static int check_duplicate_connection(const char* ip, int port) {
+    for (int i = 0; i < MAX_CONNECTIONS; i++) {
+        if (connections[i].is_active && strcmp(connections[i].ip, ip) == 0
+            && connections[i].port == port) {
+            return i;
+        }
+    }
+    return -1;
+ }
